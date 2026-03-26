@@ -2411,15 +2411,15 @@ const POS_PHYSIQUE = {
 
 // FF archetypes: small (40%), medium (35%), key (25%)
 const FF_ARCHETYPES = [
-  { id:'small',  label:'General Fwd',  hMin:170, hMax:182, wMin:68, wMax:80,  weight:40 },
-  { id:'medium', label:'General Fwd', hMin:183, hMax:191, wMin:82, wMax:95,  weight:35 },
-  { id:'key',    label:'Key Fwd',    hMin:190, hMax:202, wMin:95, wMax:108, weight:25 },
+  { id:'small',  label:'General Fwd',  hMin:170, hMax:182, wMin:68, wMax:80,  weight:45 },
+  { id:'medium', label:'General Fwd', hMin:183, hMax:191, wMin:82, wMax:95,  weight:40 },
+  { id:'key',    label:'Key Fwd',    hMin:190, hMax:202, wMin:95, wMax:108, weight:15 },
 ];
 // FB archetypes: small (35%), medium (40%), key (25%)
 const FB_ARCHETYPES = [
-  { id:'small',  label:'General Back',  hMin:172, hMax:183, wMin:70, wMax:82,  weight:35 },
-  { id:'medium', label:'General Back', hMin:183, hMax:192, wMin:83, wMax:95,  weight:40 },
-  { id:'key',    label:'Key Def',    hMin:190, hMax:202, wMin:95, wMax:108, weight:25 },
+  { id:'small',  label:'General Back',  hMin:172, hMax:183, wMin:70, wMax:82,  weight:40 },
+  { id:'medium', label:'General Back', hMin:183, hMax:192, wMin:83, wMax:95,  weight:45 },
+  { id:'key',    label:'Key Def',    hMin:190, hMax:202, wMin:95, wMax:108, weight:15 },
 ];
 
 function rollArchetype(archetypes) {
@@ -2961,7 +2961,33 @@ function delistPlayer(p) {
   renderEditor();
 }
 
-function edSelectSlot(type, idx, sl) { G.edSelType=type; G.edSelIdx=idx; renderEditor(); showPickerPanel(type, idx, sl); }
+function edSelectSlot(type, idx, sl) {
+  // Nothing selected yet — select this slot
+  if (G.edSelType === null) {
+    G.edSelType = type; G.edSelIdx = idx;
+    renderEditor();
+    showPickerPanel(type, idx, sl);
+    return;
+  }
+  // Tapped the same slot — deselect
+  if (G.edSelType === type && G.edSelIdx === idx) {
+    G.edSelType = null; G.edSelIdx = null;
+    closePicker(); renderEditor();
+    return;
+  }
+  // Second tap — swap the two slots
+  var fromType = G.edSelType, fromIdx = G.edSelIdx;
+  var fromP = fromType === 'field' ? G.lineup[fromIdx] : G.bench[fromIdx];
+  var toP   = type === 'field'     ? G.lineup[idx]     : G.bench[idx];
+  if (fromType === 'field')  G.lineup[fromIdx] = toP;
+  else                       G.bench[fromIdx]  = toP;
+  if (type === 'field')      G.lineup[idx]     = fromP;
+  else                       G.bench[idx]      = fromP;
+  G.edSelType = null; G.edSelIdx = null;
+  closePicker();
+  save();
+  renderEditor();
+}
 
 function showPickerPanel(type, idx, sl) {
   const panel = document.getElementById('picker-panel'), grid = document.getElementById('picker-grid'), title = document.getElementById('picker-title');
@@ -3051,8 +3077,8 @@ function buyPack(type, cost) {
     const posList = PACK_POSITIONS[type] || POSLIST;
     var rawPos = posList[~~(Math.random() * posList.length)];
     var forcedArch = null;
-    if (rawPos === 'Key Forward') { rawPos = 'Full Forward'; forcedArch = Math.random() < 0.6 ? 'key' : 'medium'; }
-    if (rawPos === 'Key Back')    { rawPos = 'Full Back';    forcedArch = Math.random() < 0.6 ? 'key' : 'medium'; }
+    if (rawPos === 'Key Forward') { rawPos = 'Full Forward'; forcedArch = Math.random() < 0.45 ? 'key' : 'medium'; }
+    if (rawPos === 'Key Back')    { rawPos = 'Full Back';    forcedArch = Math.random() < 0.45 ? 'key' : 'medium'; }
     if (rawPos === 'Centre')      { rawPos = 'Centre'; } // Centre = Midfielder internally
     const p = gPlayer(rawPos, rar, forcedArch); G.players.push(p); newPs.push(p);
     // Record epics and legends in Hall of Fame
@@ -3248,13 +3274,31 @@ function genCPU() {
   };
   var rp = rarPools[G.division] || rarPools[4];
   const teamName = 'CPU';
+  // Weighted archetype roll for FF/FB — more small/medium than key
+  function cpuArchetype(pos) {
+    if (pos === 'Full Forward') {
+      var r = Math.random();
+      return r < 0.40 ? 'small' : r < 0.75 ? 'medium' : 'key';
+    }
+    if (pos === 'Full Back') {
+      var r = Math.random();
+      return r < 0.35 ? 'small' : r < 0.75 ? 'medium' : 'key';
+    }
+    return null;
+  }
+
   const field = SLOTS.map(sl => {
-    const p = gPlayer(sl.pos, rp[~~(Math.random()*rp.length)]);
+    const arch = cpuArchetype(sl.pos);
+    const p = gPlayer(sl.pos, rp[~~(Math.random()*rp.length)], arch);
     if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, teamName, false);
     return p;
   });
-  const bench = Array(5).fill(null).map(() => {
-    const p = gPlayer(POSLIST[~~(Math.random()*POSLIST.length)], rp[~~(Math.random()*rp.length)]);
+
+  // Bench — 5 players, position-weighted to complement field
+  const benchPositions = ['Full Forward','Half Forward','Centre','Half Back','Full Back'];
+  const bench = benchPositions.map(function(pos) {
+    const arch = cpuArchetype(pos);
+    const p = gPlayer(pos, rp[~~(Math.random()*rp.length)], arch);
     if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, teamName, false);
     return p;
   });
@@ -3895,6 +3939,45 @@ function checkAutoInterchange() {
         + (isMatchPos ? '' : ' (OOP)') + '.', '');
       G.interchanges = (G.interchanges || 0) + 1;
       changedCount++;
+    }
+  }
+
+  // CPU interchange — mirror same logic for CPU team
+  var cpuChanged = 0;
+  for (var ci = 0; ci < 18; ci++) {
+    if (cpuChanged >= 3) break;
+    const cpuFieldP = G.cpu[ci];
+    if (!cpuFieldP) continue;
+    const cpuSlotPos = SLOTS[ci].pos;
+    const cpuFieldFat = G.fatigue[cpuFieldP.id] || 0;
+    const cpuUrgentThresh = cpuSlotPos === 'Full Back' ? 0.85 : 0.62;
+    const cpuUrgent = cpuFieldFat > cpuUrgentThresh;
+    const cpuBaseThresh = {
+      'Centre':0.38,'Wingman':0.40,'Ruck':0.40,
+      'Half Forward':0.44,'Half Back':0.50,
+      'Full Forward':0.48,'Full Back':0.75,
+    }[cpuSlotPos] || 0.42;
+    const cpuSwapThresh = cpuBaseThresh - qtrProgress * (cpuSlotPos === 'Full Back' ? 0.02 : 0.10);
+    if (cpuFieldFat < cpuSwapThresh && !cpuUrgent) continue;
+
+    var cpuBestSwap = null, cpuBestScore = -1;
+    G.cpuBench.forEach(function(cpuBenchP, cbi) {
+      if (!cpuBenchP) return;
+      const cbFat = G.fatigue[cpuBenchP.id] || 0;
+      if (cbFat >= cpuFieldFat - 0.04) return;
+      const isMatch = cpuBenchP.pos === cpuSlotPos;
+      const bOVR = effectiveOVR(cpuBenchP, isMatch ? cpuSlotPos : cpuBenchP.pos);
+      const fOVR = effectiveOVR(cpuFieldP, cpuSlotPos);
+      const score = (bOVR - fOVR) + (cpuFieldFat - cbFat) * 30 + (cpuUrgent ? 20 : 0) - (isMatch ? 0 : 10);
+      if (score > cpuBestScore) { cpuBestScore = score; cpuBestSwap = { cpuBenchP, cbi }; }
+    });
+
+    if (cpuBestSwap && cpuBestScore > 0) {
+      const { cpuBenchP, cbi } = cpuBestSwap;
+      G.cpuBench[cbi] = cpuFieldP;
+      G.cpu[ci] = cpuBenchP;
+      addCmt('🔄 ' + cpuBenchP.name + ' on for ' + cpuFieldP.name + ' (CPU).', '');
+      cpuChanged++;
     }
   }
 }
@@ -4719,7 +4802,7 @@ function endQtr() {
   var allPlayers = G.players.concat(G.lineup).concat(G.bench).concat(G.cpu).concat(G.cpuBench);
   var playerMap = {};
   allPlayers.forEach(function(p){ if(p) playerMap[p.id] = p; });
-  var baseRecovery = 0.35; // flat 35% recovery at every quarter break
+  var baseRecovery = G.qtr === 2 ? 0.50 : 0.35; // 50% half-time, 35% Q1/Q3 breaks
   Object.keys(G.fatigue).forEach(function(id){
     G.fatigue[id] = Math.max(0, G.fatigue[id] - baseRecovery);
   });
@@ -5381,13 +5464,21 @@ function genSeasonTeam(name) {
   };
   var rp = rarPools[G.division] || rarPools[4];
 
+  function seasonArch(pos) {
+    if (pos === 'Full Forward') { var r=Math.random(); return r<0.45?'small':r<0.85?'medium':'key'; }
+    if (pos === 'Full Back')    { var r=Math.random(); return r<0.40?'small':r<0.85?'medium':'key'; }
+    return null;
+  }
   var field = SLOTS.map(function(sl){
-    var p = gPlayer(sl.pos, rp[~~(Math.random()*rp.length)]);
+    var arch = seasonArch(sl.pos);
+    var p = gPlayer(sl.pos, rp[~~(Math.random()*rp.length)], arch);
     if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, name, false);
     return p;
   });
-  var bench = Array(5).fill(null).map(function(){
-    var p = gPlayer(POSLIST[~~(Math.random()*POSLIST.length)], rp[~~(Math.random()*rp.length)]);
+  var benchPositions = ['Full Forward','Half Forward','Centre','Half Back','Full Back'];
+  var bench = benchPositions.map(function(pos){
+    var arch = seasonArch(pos);
+    var p = gPlayer(pos, rp[~~(Math.random()*rp.length)], arch);
     if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, name, false);
     return p;
   });
