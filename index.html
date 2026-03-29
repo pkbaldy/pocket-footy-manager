@@ -1009,7 +1009,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
             <div style="font-size:20px;margin-bottom:4px">🏆</div>
             <div class="home-sec-title">Achievements</div>
           </button>
-          <button class="home-sec-btn" onclick="showScreen('screen-awards');renderAwardsScreen()">
+          <button class="home-sec-btn" onclick="if(!G.careerRecords._lastSeasonStats){alert('Complete a season first to view awards!');}else{showScreen('screen-awards');renderAwardsScreen();}">
             <div style="font-size:20px;margin-bottom:4px">🏅</div>
             <div class="home-sec-title">Awards</div>
           </button>
@@ -1096,7 +1096,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
       <div class="setting-row">
         <div class="setting-info">
           <div class="setting-label">Reset Account</div>
-          <div class="setting-desc">Lose all players, start fresh with 3,000 coins and new starter squad</div>
+          <div class="setting-desc">Lose all players, start fresh with 3,000 coins to spend on packs</div>
         </div>
         <button class="setting-toggle" style="border-color:#e05050;color:#e05050;background:rgba(224,80,80,0.08)" onclick="confirmResetAccount()">Reset</button>
       </div>
@@ -1225,6 +1225,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
           </div>
         </div>
         <div class="nonsquad-grid" id="nonsquad-grid"></div>
+        <div id="nonsquad-info" style="font-size:10px;color:var(--text3);margin-top:6px;padding:4px 2px">Tap a player to select, then tap a squad slot to place them.</div>
       </div>
     </div>
   </div>
@@ -1243,7 +1244,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
   <div class="shop-content">
     <div id="pack-lock-banner" style="display:none;background:linear-gradient(135deg,rgba(163,45,45,0.3),rgba(80,10,10,0.3));border:1px solid rgba(224,80,80,0.4);border-radius:10px;padding:12px 16px;margin-bottom:12px;text-align:center">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:#e05050;text-transform:uppercase;letter-spacing:1px">🔒 Pack Shop Locked</div>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px">Packs can only be opened during the pre-season — before Round 1 is played.<br>The shop reopens at the start of next season.</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Packs open during pre-season only. Start your next season to unlock the shop.</div>
     </div>
     <div id="pack-no-gold-banner" style="display:none;background:linear-gradient(135deg,rgba(163,45,45,0.3),rgba(80,10,10,0.3));border:1px solid rgba(224,80,80,0.5);border-radius:10px;padding:10px 16px;margin-bottom:12px;text-align:center;animation:fadeUp 0.2s ease">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:#e05050;text-transform:uppercase;letter-spacing:1px">🪙 Not Enough Gold!</div>
@@ -1346,6 +1347,22 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:center">
       <button class="btn primary" onclick="showScreen('screen-main')">View Squad</button>
       <button class="btn" onclick="showScreen('screen-shop')">🛒 Shop</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH PREVIEW -->
+<div id="screen-preview" class="screen">
+  <div class="topbar">
+    <div class="topbar-title" id="preview-title">Match Preview</div>
+    <div class="topbar-actions">
+      <button class="btn sm danger" onclick="cancelGame()">Cancel</button>
+    </div>
+  </div>
+  <div style="padding:14px;flex:1;overflow-y:auto">
+    <div id="preview-content"></div>
+    <div style="margin-top:16px;padding-bottom:max(24px,env(safe-area-inset-bottom,24px))">
+      <button id="preview-go-btn" class="btn primary lg" style="width:100%;padding:14px;font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:1px">▶ Set Lineup</button>
     </div>
   </div>
 </div>
@@ -1748,8 +1765,9 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
     </div>
   </div>
   <div class="awards-wrap">
-    <div class="awards-hero">
-      <div class="awards-title">🏅 Season Awards</div>
+    <div class="awards-hero" style="text-align:center;padding:20px 14px 16px;background:linear-gradient(180deg,rgba(250,199,117,0.12),transparent)">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:6px">End of Year Ceremony</div>
+      <div class="awards-title" style="font-size:32px">🏅 Season Awards</div>
       <div class="awards-subtitle" id="awards-subtitle">Season 1 · End of Year Ceremony</div>
     </div>
     <div id="awards-list"></div>
@@ -1788,9 +1806,10 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
   </div>
   <div class="trade-wrap">
     <div class="trade-tabs">
-      <button class="trade-tab active" id="trade-tab-sell" onclick="setTradeTab('sell')">Sell Players</button>
+      <button class="trade-tab active" id="trade-tab-sell" onclick="setTradeTab('sell')">Sell</button>
+      <button class="trade-tab" id="trade-tab-trade" onclick="setTradeTab('trade')">Trade</button>
       <button class="trade-tab" id="trade-tab-buy" onclick="setTradeTab('buy')">Free Agents</button>
-      <button class="trade-tab" id="trade-tab-hol" onclick="setTradeTab('hol')">Hall of Superstars</button>
+      <button class="trade-tab" id="trade-tab-hol" onclick="setTradeTab('hol')">Legends</button>
     </div>
     <div id="trade-content"></div>
   </div>
@@ -1935,7 +1954,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
 // ─── CONSTANTS ───────────────────────────────────────────────────────────
 const SAVE_KEY = 'afl_battler_v11';
 const START_COINS = 3_000;
-const PACK_SIZE = 5;
+const PACK_SIZE = 6;
 
 const SLOTS = [
   {key:'FF1',  pos:'Full Forward', x:131,y:91},
@@ -2257,6 +2276,19 @@ const KICK_CMTS = [
   '{from} goes inside 50 — {to} contests.',
   '{from} bombs it forward to {to}.',
   '{from} clears — {to} receives on the wing.',
+  '{from} with a precise left-footer to {to}.',
+  '{from} works it quickly to {to}.',
+  'Smart use by {from} — finds {to} on the overlap.',
+  '{from} kicks across the face — {to} marks.',
+  '{from} with a floater — {to} waits under it.',
+  '{from} steps onto the right and hits {to}.',
+  'The switch is on — {from} to {to}.',
+  '{from} plays on immediately, finds {to}.',
+  'Out of the stoppage — {from} to {to}.',
+  '{from} runs into space and hits {to} in stride.',
+  'Inch-perfect delivery from {from} to {to}.',
+  '{from} goes short to {to}.',
+  '{from} sends it long — {to} takes the contest.',
 ];
 const HB_CMTS = [
   '{from} handballs to {to}.',
@@ -2267,6 +2299,57 @@ const HB_CMTS = [
   'Short pass from {from} to {to}.',
   '{from} keeps it going — {to} picks up.',
   'Off the back of the pack — {from} to {to}.',
+  '{from} spins and handballs to {to}.',
+  'Nice give by {from} — {to} in the clear.',
+  '{from} takes the contact and finds {to}.',
+  '{from} ducks under the tackle — gets it to {to}.',
+  'Smart handball from {from} — {to} has room.',
+  '{from} two-hands it to {to}.',
+  '{from} under pressure — finds {to} on the burst.',
+  'Out of the congestion — {from} to {to}.',
+];
+// Position-specific commentary pools
+const MARK_CMTS = [
+  '{name} takes a strong contested mark!',
+  'Big pack mark to {name}!',
+  '{name} rises above the pack — mark!',
+  '{name} takes it on the chest.',
+  'Uncontested mark to {name}.',
+  '{name} holds on under pressure.',
+  'Speccy attempt — {name} just holds on!',
+  '{name} leads and marks strongly.',
+  '{name} with a great one-hander!',
+  'Clean hands from {name} — mark paid.',
+];
+const TACKLE_CMTS = [
+  '{tackler} throws {carrier} to the ground — ball up!',
+  'Crunching tackle from {tackler} on {carrier}!',
+  '{carrier} is brought down by {tackler}.',
+  '{tackler} drags down {carrier} — held!',
+  'Brilliant work from {tackler} — catches {carrier}!',
+  '{carrier} tries to break free but {tackler} holds on.',
+  'Great pressure from {tackler} — {carrier} pinned.',
+  '{tackler} flies in with the tackle on {carrier}!',
+];
+const GOAL_CMTS = [
+  '{name} slots it through the middle!',
+  'GOAL! {name} converts from {dist}!',
+  '{name} with a beauty — right through the big sticks!',
+  'Straight as an arrow from {name}!',
+  '{name} makes no mistake — GOAL!',
+  'What a finish from {name}!',
+  '{name} is deadly accurate today — another major!',
+  '{name} kicks truly from {dist}!',
+  'No doubt about that one from {name}!',
+  '{name} steps back and slots it!',
+];
+const BEHIND_CMTS = [
+  '{name} just misses — behind.',
+  'Unlucky from {name} — drifts to the right.',
+  '{name} hits the post — one point.',
+  'Behind from {name}. Should have had the major.',
+  '{name} goes for the banana — misses.',
+  'Point only to {name}.',
 ];
 function kickCmt(from, to) {
   var t = KICK_CMTS[~~(Math.random()*KICK_CMTS.length)];
@@ -2275,6 +2358,22 @@ function kickCmt(from, to) {
 function hbCmt(from, to) {
   var t = HB_CMTS[~~(Math.random()*HB_CMTS.length)];
   return t.replace('{from}', from||'').replace('{to}', to||'a teammate');
+}
+function markCmt(name) {
+  var t = MARK_CMTS[~~(Math.random()*MARK_CMTS.length)];
+  return t.replace('{name}', name||'');
+}
+function tackleCmt(tackler, carrier) {
+  var t = TACKLE_CMTS[~~(Math.random()*TACKLE_CMTS.length)];
+  return t.replace('{tackler}', tackler||'').replace('{carrier}', carrier||'');
+}
+function goalCmt(name, dist) {
+  var t = GOAL_CMTS[~~(Math.random()*GOAL_CMTS.length)];
+  return t.replace('{name}', name||'').replace('{dist}', dist||'close range');
+}
+function behindCmt(name) {
+  var t = BEHIND_CMTS[~~(Math.random()*BEHIND_CMTS.length)];
+  return t.replace('{name}', name||'');
 }
 
 const PW = {
@@ -2381,8 +2480,26 @@ function calcOVR(stats, pref, slot) {
     return a + (val * (penalised ? 0.8 : 1.0)) * wt;
   }, 0) / tw;
 
-  // Standard OOP penalty on top
-  if (isOOP) o *= 0.85;
+  // Tiered OOP penalty — adjacent positions penalised less
+  if (isOOP) {
+    const MID_GROUP = ['Centre','Wingman','Half Forward','Half Back'];
+    const isMidPref = MID_GROUP.includes(pref), isMidSlot = MID_GROUP.includes(sp);
+    // Adjacent: mid↔mid, FF↔HF, FB↔HB, Ruck↔Centre
+    const adjacent = (isMidPref && isMidSlot)
+      || (pref==='Full Forward' && sp==='Half Forward')
+      || (pref==='Half Forward' && sp==='Full Forward')
+      || (pref==='Full Back' && sp==='Half Back')
+      || (pref==='Half Back' && sp==='Full Back')
+      || (pref==='Ruck' && sp==='Centre')
+      || (pref==='Centre' && sp==='Ruck')
+      || (pref==='Ruck' && sp==='Full Forward')
+      || (pref==='Full Forward' && sp==='Ruck')
+      || (pref==='Full Forward' && isMidSlot)
+      || (pref==='Full Back' && isMidSlot)
+      || (isMidPref && sp==='Half Forward')
+      || (isMidPref && sp==='Half Back');
+    o *= adjacent ? 0.93 : 0.85; // 7% for adjacent, 15% for foreign
+  }
   return Math.round(o);
 }
 
@@ -2491,13 +2608,27 @@ function gPlayer(pos, rar, forcedArch) {
 
 // Player trade value — simple rarity-based prices
 // Local ~10, Fringe ~20, Reliable ~40, Gun ~75, Superstar ~100
-function playerValue(p) {
-  const base = { local: 10, fringe: 20, reliable: 40, gun: 75, superstar: 100 };
-  const val = base[p.rar] || 10;
-  // Small age bonus for young players (up to +50% for 18yo), discount for old
+function _playerBaseValue(p) {
+  // Core formula: OVR × rarity × age × 5, rounded to nearest 25
+  const ovr = calcOVR(p.stats, p.pos, p.pos);
+  const rarMult = { local:0.5, fringe:0.7, reliable:1.0, gun:1.8, superstar:3.5 }[p.rar] || 1.0;
   const age = p.age || 25;
-  const ageMult = age <= 23 ? 1.5 - (age - 18) * 0.1 : age >= 31 ? Math.max(0.4, 1 - (age - 30) * 0.1) : 1;
-  return Math.max(5, Math.round(val * ageMult / 5) * 5);
+  const ageMult = age <= 21 ? 1.8 : age <= 23 ? 1.5 : age <= 25 ? 1.3
+               : age <= 27 ? 1.1 : age <= 29 ? 1.0 : age <= 31 ? 0.75
+               : age <= 33 ? 0.55 : 0.35;
+  return Math.round(ovr * rarMult * ageMult * 5 / 25) * 25;
+}
+function playerValue(p) {
+  // Sell value: 25% of full value (trading away should feel like a loss)
+  return Math.max(25, Math.round(_playerBaseValue(p) * 0.25 / 25) * 25);
+}
+function tradeValue(p) {
+  // Trade offer value: full value — what the CPU demands
+  return Math.max(50, _playerBaseValue(p));
+}
+function faSigningCost(p) {
+  // Free agent signing: full value — superstars are expensive
+  return Math.max(50, _playerBaseValue(p));
 }
 
 // Age colour coding
@@ -2535,7 +2666,7 @@ function sCoord(idx, isA, top) {
   return {x: top ? sl.x+off : sl.x-off, y: top ? 600-sl.y : sl.y};
 }
 
-function shortName(p) { const pts = p.name.split(' '); return (pts[0]?pts[0][0]+'.':'') + ' ' + (pts[1]||''); }
+function shortName(p) { if (!p || !p.name) return '?'; const pts = p.name.split(' '); return (pts[0]?pts[0][0]+'.':'') + ' ' + (pts[1]||''); }
 function initials(p) { return p.name.split(' ').map(x=>x[0]).join('').slice(0,2); }
 // Team name initials — first letter of each word, max 2 chars (e.g. "Your Team" → "YT")
 function teamInitials() {
@@ -2819,17 +2950,22 @@ function autoSquad() {
 }
 
 function addNonSquadPlayer(player) {
-  let placed = false;
-  for (let i = 0; i < 18; i++) { if (!G.lineup[i] && SLOTS[i].pos===player.pos) { G.lineup[i]=player; placed=true; break; } }
-  if (!placed) for (let i = 0; i < 18; i++) { if (!G.lineup[i]) { G.lineup[i]=player; placed=true; break; } }
-  if (!placed) for (let i = 0; i < 5; i++) { if (!G.bench[i]) { G.bench[i]=player; placed=true; break; } }
-  if (!placed) {
-    let wo=999, wt=null, wi=0;
-    G.lineup.forEach((p,i) => { if(!p) return; const o=calcOVR(p.stats,p.pos,SLOTS[i].pos); if(o<wo){wo=o;wt='field';wi=i;} });
-    G.bench.forEach((p,i) => { if(!p) return; const o=calcOVR(p.stats,p.pos,'Bench'); if(o<wo){wo=o;wt='bench';wi=i;} });
-    if (wt==='field') G.lineup[wi]=player; else if (wt==='bench') G.bench[wi]=player;
+  // If this player is already selected — deselect
+  if (G.edSelType === 'nonsquad' && G._edSelPlayer && G._edSelPlayer.id === player.id) {
+    G.edSelType = null; G.edSelIdx = null; G._edSelPlayer = null;
+    renderEditor(); return;
   }
-  save(); renderEditor();
+  // If a field/bench slot is already selected — place this player there
+  if (G.edSelType === 'field' || G.edSelType === 'bench') {
+    var idx = G.edSelIdx, type = G.edSelType;
+    if (type === 'field') G.lineup[idx] = player;
+    else                  G.bench[idx]  = player;
+    G.edSelType = null; G.edSelIdx = null; G._edSelPlayer = null;
+    closePicker(); save(); renderEditor(); return;
+  }
+  // Nothing selected — highlight this non-squad player
+  G.edSelType = 'nonsquad'; G.edSelIdx = null; G._edSelPlayer = player;
+  renderEditor();
 }
 
 // ─── SQUAD EDITOR ─────────────────────────────────────────────────────────
@@ -2862,7 +2998,10 @@ function renderEditor() {
     const sel = G.edSelType === 'field' && G.edSelIdx === i;
     const oop = p && isOOPForSlot(p, sl);
     const div = document.createElement('div');
-    div.className = 'fslot' + (sel ? ' selected' : '') + (oop && !sel ? ' oop' : '');
+    const isInjField = p && G.injuries[p.id];
+    const isNsTarget = G.edSelType === 'nonsquad' && !isInjField;
+    div.className = 'fslot' + (sel ? ' selected' : '') + (oop && !sel ? ' oop' : '') + (isNsTarget && !sel ? ' swap-target' : '');
+    if (isInjField) { div.style.opacity='0.5'; div.style.pointerEvents='none'; }
 
     if (p) {
       const o = calcOVR(p.stats, p.pos, sl.pos);
@@ -2880,6 +3019,7 @@ function renderEditor() {
           + (isCap ? '<span style="color:#FAC775;font-weight:800;font-size:9px">C</span>' : isVC ? '<span style="color:#aaa;font-weight:800;font-size:9px">VC</span>' : '')
           + potBadge
         + '</div>'
+        + '<div style="font-size:7px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + playerPosLabel(p) + (injInfo ? ' · <span style="color:#e05050">' + injInfo.roundsRemaining + 'w</span>' : '') + '</div>'
         + '<div class="fslot-btns">'
           + '<button class="btn sm" style="padding:1px 5px;font-size:9px;flex:1" onclick="event.stopPropagation();setCaptainMenu(G.lineup['+i+'])">C</button>'
           + '<button class="btn sm" style="padding:1px 5px;font-size:9px;flex:1" onclick="event.stopPropagation();showProfile(G.lineup['+i+'],'+i+')">ℹ</button>'
@@ -2904,7 +3044,10 @@ function renderEditor() {
   for (let i = 0; i < 5; i++) {
     const p = G.bench[i], sel = G.edSelType === 'bench' && G.edSelIdx === i;
     const div = document.createElement('div');
-    div.className = 'bench-slot' + (sel ? ' selected' : '');
+    const isInjBench = p && G.injuries[p.id];
+    const isBenchNsTarget = G.edSelType === 'nonsquad' && !isInjBench;
+    div.className = 'bench-slot' + (sel ? ' selected' : '') + (isInjBench ? ' oop' : '') + (isBenchNsTarget && !sel ? ' swap-target' : '');
+    if (isInjBench) { div.style.opacity='0.5'; div.style.cursor='not-allowed'; }
     if (p) {
       const o = calcOVR(p.stats, p.pos, 'Bench');
       const injInfo = G.injuries[p.id];
@@ -2913,11 +3056,12 @@ function renderEditor() {
         + '<div class="fslot-name">' + p.name + (injInfo ? ' <span style="color:#e05050;font-size:8px">🚑</span>' : '') + '</div>'
         + '<div class="fslot-meta"><span style="font-weight:700;color:var(--text)">' + o + '</span>'
         + ' <span style="color:' + starsColor(p.stars||0) + ';font-size:8px">' + starsStr(p.stars||0) + '</span></div>'
+        + '<div style="font-size:8px;color:var(--text3);margin-top:1px">' + playerPosLabel(p) + (injInfo?' · <span style="color:#e05050">'+injInfo.roundsRemaining+'w</span>':'') + '</div>'
         + '<div class="fslot-btns"><button class="btn sm" style="padding:1px 5px;font-size:9px;flex:1" onclick="event.stopPropagation();showProfile(G.bench['+i+'])">ℹ</button></div>';
     } else {
       div.innerHTML = '<div class="fslot-key">B' + (i+1) + '</div><div class="fslot-empty">Empty</div>';
     }
-    div.onclick = () => edSelectSlot('bench', i, {key:'Bench '+(i+1), pos:'Bench'});
+    if (!isInjBench) div.onclick = () => edSelectSlot('bench', i, {key:'Bench '+(i+1), pos:'Bench'});
     bEl.appendChild(div);
   }
 
@@ -2930,20 +3074,43 @@ function renderNonSquad() {
   const ns = nonSquadPlayers().sort((a,b) => calcOVR(b.stats,b.pos,b.pos) - calcOVR(a.stats,a.pos,a.pos));
   if (count) count.textContent = ns.length;
   if (section) section.style.display = ns.length ? 'block' : 'none';
+
+  // Update instruction label
+  var infoEl = document.getElementById('nonsquad-info');
+  if (infoEl) {
+    if (G.edSelType === 'nonsquad' && G._edSelPlayer) {
+      infoEl.textContent = '👆 Now tap a field or bench slot to place ' + G._edSelPlayer.name.split(' ')[1] + '.';
+      infoEl.style.color = 'var(--gold)';
+    } else if (G.edSelType === 'field' || G.edSelType === 'bench') {
+      infoEl.textContent = '👆 Slot selected — tap a player below to swap them in.';
+      infoEl.style.color = 'var(--gold)';
+    } else {
+      infoEl.textContent = 'Tap a player to select, then tap a squad slot to place them.';
+      infoEl.style.color = 'var(--text3)';
+    }
+  }
+
   grid.innerHTML = '';
   ns.forEach(p => {
     const o = calcOVR(p.stats, p.pos, p.pos);
-    const div = document.createElement('div'); div.className = 'nscard';
-    const rc = rarColor(p.rar); if (rc !== 'transparent') div.style.borderColor = rc;
-    div.innerHTML = `<div class="ns-add">+ Add</div>
+    const isSelected = G.edSelType === 'nonsquad' && G._edSelPlayer && G._edSelPlayer.id === p.id;
+    const div = document.createElement('div');
+    div.className = 'nscard' + (isSelected ? ' selected' : '');
+    if (isSelected) div.style.cssText = 'border-color:var(--gold);background:rgba(250,199,117,0.12);box-shadow:0 0 8px rgba(250,199,117,0.25)';
+    else { const rc = rarColor(p.rar); if (rc !== 'transparent') div.style.borderColor = rc; }
+    div.innerHTML = `<div class="ns-add">${isSelected ? '✓ Selected' : '+ Add'}</div>
       <div class="ns-ovr">${o}</div>
       <div class="ns-name">${p.name}</div>
-      <div class="ns-pos">${p.pos.split(' ').map(w=>w[0]).join('')}</div><div style="font-size:9px;letter-spacing:1px;color:${starsColor(p.stars||0)}">${starsStr(p.stars||0)}</div>
-      <button class="ns-delist-btn" title="Delist player">✕</button>`;
+      <div class="ns-pos">${playerPosLabel(p)}</div><div style="font-size:9px;letter-spacing:1px;color:${starsColor(p.stars||0)}">${starsStr(p.stars||0)}</div>
+      <div style="display:flex;gap:3px;margin-top:3px;justify-content:center">
+        <button class="ns-info-btn" title="View stats" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:9px;padding:2px 0;cursor:pointer">ℹ</button>
+        <button class="ns-delist-btn" title="Delist" style="flex:1;background:rgba(224,80,80,0.1);border:1px solid rgba(224,80,80,0.3);border-radius:4px;color:#e05050;font-size:9px;padding:2px 0;cursor:pointer">✕</button>
+      </div>`;
     div.onclick = () => addNonSquadPlayer(p);
-    // Delist button — stop propagation so card click doesn't fire
     const delistBtn = div.querySelector('.ns-delist-btn');
     delistBtn.onclick = (e) => { e.stopPropagation(); delistPlayer(p); };
+    const infoBtn = div.querySelector('.ns-info-btn');
+    infoBtn.onclick = (e) => { e.stopPropagation(); showProfile(p); };
     grid.appendChild(div);
   });
 }
@@ -2962,31 +3129,46 @@ function delistPlayer(p) {
 }
 
 function edSelectSlot(type, idx, sl) {
-  // Nothing selected yet — select this slot
+  const isInjured = type === 'field' ? (G.lineup[idx] && G.injuries[G.lineup[idx].id])
+                                     : (G.bench[idx]  && G.injuries[G.bench[idx].id]);
+  if (isInjured) return; // injured — can't move
+
+  // Case 1: a non-squad player is selected — place them into this slot
+  if (G.edSelType === 'nonsquad') {
+    const player = G._edSelPlayer;
+    const displaced = type === 'field' ? G.lineup[idx] : G.bench[idx];
+    if (type === 'field') G.lineup[idx] = player;
+    else                  G.bench[idx]  = player;
+    // Displaced player goes back to non-squad pool (they're already in G.players)
+    G.edSelType = null; G.edSelIdx = null; G._edSelPlayer = null;
+    closePicker(); save(); renderEditor();
+    return;
+  }
+
+  // Case 2: nothing selected yet — highlight this slot
   if (G.edSelType === null) {
     G.edSelType = type; G.edSelIdx = idx;
     renderEditor();
-    showPickerPanel(type, idx, sl);
     return;
   }
-  // Tapped the same slot — deselect
+
+  // Case 3: tapped the same slot — deselect
   if (G.edSelType === type && G.edSelIdx === idx) {
     G.edSelType = null; G.edSelIdx = null;
     closePicker(); renderEditor();
     return;
   }
-  // Second tap — swap the two slots
+
+  // Case 4: a different field/bench slot is already selected — swap them
   var fromType = G.edSelType, fromIdx = G.edSelIdx;
   var fromP = fromType === 'field' ? G.lineup[fromIdx] : G.bench[fromIdx];
   var toP   = type === 'field'     ? G.lineup[idx]     : G.bench[idx];
-  if (fromType === 'field')  G.lineup[fromIdx] = toP;
-  else                       G.bench[fromIdx]  = toP;
-  if (type === 'field')      G.lineup[idx]     = fromP;
-  else                       G.bench[idx]      = fromP;
+  if (fromType === 'field') G.lineup[fromIdx] = toP;
+  else                      G.bench[fromIdx]  = toP;
+  if (type === 'field')     G.lineup[idx]     = fromP;
+  else                      G.bench[idx]      = fromP;
   G.edSelType = null; G.edSelIdx = null;
-  closePicker();
-  save();
-  renderEditor();
+  closePicker(); save(); renderEditor();
 }
 
 function showPickerPanel(type, idx, sl) {
@@ -3031,7 +3213,7 @@ function clearSlot() {
 }
 
 function closePicker() {
-  G.edSelType=null; G.edSelIdx=null;
+  G.edSelType=null; G.edSelIdx=null; G._edSelPlayer=null;
   const p = document.getElementById('picker-panel'); if (p) p.style.display='none';
   renderEditor();
 }
@@ -3052,7 +3234,10 @@ function renderShopPlayers() {
 let _pendingPackCards = [];
 function isPackLocked() {
   // Packs locked once Round 1 of the current season has been played
-  return G.season && !G.season.finished && G.season.currentRound >= 1;
+  if (G.season && !G.season.finished && G.season.currentRound >= 1) return true;
+  // After season 1 finishes, lock packs until next season is started
+  if (G.season && G.season.finished && G.seasonHistory.length >= 1) return true;
+  return false;
 }
 
 function buyPack(type, cost) {
@@ -3266,11 +3451,12 @@ function buildArrow(id, color, pointsUp, label) {
 // ─── GAME START ───────────────────────────────────────────────────────────
 function genCPU() {
   // Use same division-scaled rarity pools as season teams
+  // Target OVRs: Div4=62, Div3=70, Div2=77, Div1=83
   var rarPools = {
-    1: ['superstar','superstar','superstar','superstar','superstar','gun','gun','gun','gun','gun','gun','gun','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','fringe','fringe','fringe'],
-    2: ['superstar','superstar','gun','gun','gun','gun','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','fringe','fringe','fringe','fringe','fringe','local'],
-    3: ['superstar','gun','gun','reliable','reliable','reliable','reliable','reliable','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','local','local','local','local','local','local'],
-    4: ['reliable','reliable','fringe','fringe','fringe','fringe','fringe','fringe','fringe','local','local','local','local','local','local','local','local','local','local','local','local','local','local'],
+    1: ['superstar','superstar','superstar','superstar','superstar','gun','gun','gun','gun','gun','gun','gun','gun','gun','gun','gun','gun','reliable','reliable','reliable','reliable','reliable','reliable'],
+    2: ['superstar','superstar','gun','gun','gun','gun','gun','gun','gun','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','fringe','fringe','fringe','fringe','fringe','fringe'],
+    3: ['gun','gun','gun','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','fringe','fringe','fringe','fringe','fringe','fringe','local','local','local','local'],
+    4: ['reliable','reliable','reliable','reliable','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','local','local','local','local','local','local','local','local'],
   };
   var rp = rarPools[G.division] || rarPools[4];
   const teamName = 'CPU';
@@ -3397,23 +3583,21 @@ function showWeatherBadge() {
 function startGame() {
   if (!G.players.length) { showScreen('screen-shop'); return; }
   if (G.lineup.some(p=>!p) || G.bench.some(p=>!p)) autoSquad();
-  G.qtr=0; G.sA={g:0,b:0}; G.sB={g:0,b:0};
-  G.qtrScores = [];
   const cpu = genCPU(); G.cpu=cpu.field; G.cpuBench=cpu.bench;
-  document.getElementById('commentary').innerHTML = '';
-  initPST(G.lineup, G.cpu);
-  initFatigue([...G.lineup, ...G.bench]);
-  G.activeLine = [...G.lineup];
-  G.momentum = 0; G.consecutiveScores = 0; G.playerForm = {};
-  G._summaryLineup = null; G._summaryBench = null; G._pendingMilestones = [];
-  G.cpuName = 'Computer';
+  G.cpuName = 'CPU';
   G.seasonMode = false;
-  if (G.season && G.season.myRecord && G.season.myRecord.l === 0 && G.season.myRecord.w > 0) checkAchievement('unbeaten_season', false);
-  // End of season — all players recover, injuries cleared
-  G.injuries = {};
-  G.pgL=[...G.lineup]; G.pgB=[...G.bench]; // save original pre-match squad
+  G.qtr=0; G.sA={g:0,b:0}; G.sB={g:0,b:0}; G.qtrScores=[];
+  G.momentum=0; G.consecutiveScores=0; G.playerForm={};
+  G._summaryLineup=null; G._summaryBench=null; G._pendingMilestones=[]; G._gameInjuries=null;
   rollWeather();
-  startPreGame();
+  showMatchPreview(null, function() {
+    document.getElementById('commentary').innerHTML='';
+    initPST(G.lineup, G.cpu);
+    initFatigue([...G.lineup, ...G.bench]);
+    G.activeLine=[...G.lineup];
+    G.pgL=[...G.lineup]; G.pgB=[...G.bench];
+    startPreGame();
+  });
 }
 
 function cancelGame() { if(G.preInt) clearInterval(G.preInt); showScreen('screen-main'); }
@@ -3473,6 +3657,21 @@ function renderPG() {
   if (!fieldEl || !benchC) return;
   fieldEl.innerHTML = ''; benchC.innerHTML = '';
 
+  // Show warning if any injured players are still on field
+  const injuredOnField = G.pgL.filter(function(p){ return p && G.injuries[p.id]; });
+  const infoEl = document.getElementById('pg-info');
+  if (injuredOnField.length) {
+    infoEl.style.background = 'rgba(224,80,80,0.15)';
+    infoEl.style.borderColor = 'rgba(224,80,80,0.4)';
+    infoEl.style.color = '#e05050';
+    infoEl.textContent = '🚑 ' + injuredOnField.length + ' injured player' + (injuredOnField.length>1?'s':'') + ' on field — tap them to swap with a bench player!';
+  } else {
+    infoEl.style.background = '';
+    infoEl.style.borderColor = '';
+    infoEl.style.color = '';
+    infoEl.textContent = 'Tap a slot to select, tap another to swap.';
+  }
+
   const ROWS = [
     [0,1,2],[3,4,5],[6,7,8],[9,10,11],[12,13,14],[15,16,17]
   ];
@@ -3487,10 +3686,13 @@ function renderPG() {
     const sl = SLOTS[i], p = G.pgL[i];
     const sel = G.selSlot === i;
     const oop = p && isOOPForSlot(p, sl);
-    // Highlight as target when a bench player is selected
-    const isTarget = G.selBench !== null && !sel;
+    const isInjPgF = p && G.injuries[p.id];
+    // Injured field players CAN be selected (to swap OUT), but can't be swap targets
+    const isTarget = G.selBench !== null && !sel && !isInjPgF;
     const div = document.createElement('div');
-    div.className = 'fslot' + (sel ? ' selected' : '') + (oop && !sel ? ' oop' : '') + (isTarget ? ' swap-target' : '');
+    div.className = 'fslot' + (sel ? ' selected' : '') + (isInjPgF && !sel ? ' oop' : '') + (oop && !sel && !isInjPgF ? ' oop' : '') + (isTarget ? ' swap-target' : '');
+    // Injured: show at reduced opacity but KEEP clickable so they can be swapped out
+    if (isInjPgF) { div.style.opacity = '0.65'; div.style.borderColor = '#e05050'; }
 
     if (p) {
       const o = calcOVR(p.stats, p.pos, sl.pos);
@@ -3501,8 +3703,8 @@ function renderPG() {
       const potBadge = (p.potential && p.potential !== true && p.traitName)
         ? '<span style="color:#FAC775;font-size:8px" title="'+p.traitName+'">⚡</span>' : '';
       div.innerHTML =
-        '<div class="fslot-key">' + sl.key + (oop ? ' <span style="color:#EF9F27">OOP</span>' : '') + '</div>'
-        + '<div class="fslot-name">' + p.name + (injInfo ? ' <span style="color:#e05050;font-size:8px">🚑</span>' : '') + '</div>'
+        '<div class="fslot-key">' + sl.key + (isInjPgF ? ' <span style="color:#e05050;font-size:8px">🚑 SWAP!</span>' : oop ? ' <span style="color:#EF9F27">OOP</span>' : '') + '</div>'
+        + '<div class="fslot-name">' + p.name + '</div>'
         + '<div class="fslot-meta">'
           + '<span style="font-weight:700;color:var(--text)">' + o + '</span>'
           + '<span style="color:' + starsColor(p.stars||0) + ';font-size:8px">' + starsStr(p.stars||0) + '</span>'
@@ -3511,8 +3713,8 @@ function renderPG() {
         + '<div style="margin-top:3px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden">'
           + '<div style="height:100%;width:'+fatPct+'%;background:'+fc+';border-radius:2px;transition:width 0.3s"></div>'
         + '</div>'
-        + '<div style="font-size:7px;color:'+fc+';margin-top:1px;text-align:right">'
-          + (fatPct > 0 ? fatPct+'% fatigue' : 'Fresh') + '</div>';
+        + '<div style="font-size:7px;color:'+(isInjPgF?'#e05050':fc)+';margin-top:1px;text-align:right">'
+          + (isInjPgF ? (injInfo && injInfo.name ? injInfo.name : 'Injured')+' — must swap' : fatPct > 0 ? fatPct+'% fatigue' : 'Fresh') + '</div>';
     } else {
       div.innerHTML = '<div class="fslot-key">' + sl.key + '</div>'
         + '<div class="fslot-empty">' + sl.pos.split(' ').map(function(w){return w[0];}).join('') + ' Empty</div>';
@@ -3537,18 +3739,20 @@ function renderPG() {
   G.pgB.forEach(function(p, i) {
     const div = document.createElement('div');
     const selB = G.selBench === i;
+    const isInjPg = p && G.injuries[p.id];
     if (p) {
       const fat = G.fatigue[p.id] || 0;
       const fatPct = ~~(fat * 100);
       const fc = fatCol(fat);
       const o = calcOVR(p.stats, p.pos, 'Bench');
-      div.className = 'fslot' + (selB ? ' selected' : '');
+      div.className = 'fslot' + (selB ? ' selected' : '') + (isInjPg ? ' oop' : '');
       div.style.minWidth = '80px';
+      if (isInjPg) { div.style.opacity='0.5'; div.style.pointerEvents='none'; }
       div.innerHTML =
         '<div class="fslot-key">B' + (i+1) + '</div>'
         + '<div class="fslot-name">' + shortName(p) + '</div>'
-        + '<div class="fslot-meta"><span style="font-weight:700;color:var(--text)">' + o + '</span>'
-        + ' <span style="font-size:8px;color:var(--text3)">' + playerPosLabel(p) + '</span></div>'
+        + '<div class="fslot-meta"><span style="font-weight:700;color:var(--text)">' + o + '</span></div>'
+        + '<div style="font-size:8px;font-weight:700;color:var(--text3);margin-top:1px">' + playerPosLabel(p) + '</div>'
         + '<div style="margin-top:3px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden">'
           + '<div style="height:100%;width:'+fatPct+'%;background:'+fc+';border-radius:2px"></div>'
         + '</div>'
@@ -3556,8 +3760,9 @@ function renderPG() {
           + (fatPct > 0 ? fatPct+'%' : 'Fresh') + '</div>';
       div.onclick = function() { pgSelBench(i); };
     } else {
-      div.className = 'fslot' + (selB ? ' selected' : '');
+      div.className = 'fslot' + (selB ? ' selected' : '') + (isInjPg ? ' oop' : '');
       div.style.minWidth = '80px';
+      if (isInjPg) { div.style.opacity='0.5'; div.style.pointerEvents='none'; }
       div.innerHTML = '<div class="fslot-key">B' + (i+1) + '</div><div class="fslot-empty">Empty</div>';
       div.onclick = function() { pgSelBench(i); };
     }
@@ -3566,36 +3771,53 @@ function renderPG() {
 }
 
 function pgSelSlot(i) {
-  // If nothing selected — select this slot
+  const isInjured = G.pgL[i] && G.injuries[G.pgL[i].id];
+
+  // Nothing selected — select this slot (injured or not)
   if (G.selSlot === null && G.selBench === null) {
     G.selSlot = i;
     const sl = SLOTS[i], cur = G.pgL[i];
-    document.getElementById('pg-info').textContent =
-      (cur ? shortName(cur) + ' selected' : sl.key + ' (empty) selected') + ' — tap another slot or bench to swap.';
+    if (isInjured) {
+      document.getElementById('pg-info').textContent = '🚑 ' + (cur ? shortName(cur) : '') + ' is injured — tap a bench player to bring them on.';
+    } else {
+      document.getElementById('pg-info').textContent =
+        (cur ? shortName(cur) + ' selected' : sl.key + ' (empty) selected') + ' — tap another slot or bench to swap.';
+    }
     document.getElementById('pg-picker').style.display = 'none';
     renderPG();
     return;
   }
 
-  // If a bench player is selected — swap bench ↔ field
+  // Bench selected → swap bench ↔ field
+  // Don't allow swapping a healthy player INTO an injured slot's position if target is injured
   if (G.selBench !== null) {
+    const benchP = G.pgB[G.selBench];
+    // Swapping bench onto an injured field slot — fine, that's the whole point
     const tmp = G.pgL[i];
-    G.pgL[i] = G.pgB[G.selBench];
+    G.pgL[i] = benchP;
     G.pgB[G.selBench] = tmp;
-    document.getElementById('pg-info').textContent = 'Swapped!';
+    document.getElementById('pg-info').textContent = benchP ? shortName(benchP) + ' comes on!' : 'Swapped!';
     G.selBench = null;
     document.getElementById('pg-picker').style.display = 'none';
     renderPG();
     return;
   }
 
-  // If a field slot is already selected
+  // Field slot selected already
   if (G.selSlot !== null) {
     if (G.selSlot === i) {
-      // Tapped same slot — deselect
+      // Tapped same — deselect
       G.selSlot = null;
       document.getElementById('pg-info').textContent = 'Tap a slot to select.';
       document.getElementById('pg-picker').style.display = 'none';
+      renderPG();
+      return;
+    }
+    // Don't allow swapping injured player INTO another field slot (must go to bench)
+    const movingPlayer = G.pgL[G.selSlot];
+    const movingIsInjured = movingPlayer && G.injuries[movingPlayer.id];
+    if (movingIsInjured) {
+      document.getElementById('pg-info').textContent = '🚑 Injured players must go to the bench — tap a bench slot instead.';
       renderPG();
       return;
     }
@@ -3901,12 +4123,25 @@ function checkAutoInterchange() {
 
       if (benchFat >= fieldFat - 0.04) return;
 
+      // Position compatibility — realistic interchange rules
+      function posCompat(benchPos, slotPos) {
+        if (benchPos === slotPos) return 0; // perfect match
+        const midGroup = ['Centre','Wingman','Half Forward','Half Back'];
+        if (midGroup.includes(benchPos) && midGroup.includes(slotPos)) return 5; // mids rotate freely
+        if (benchPos === 'Full Forward' && midGroup.includes(slotPos)) return 8; // small/med fwd into mid
+        if (benchPos === 'Ruck' && slotPos === 'Full Forward') return 4; // Ruck rests at KF — natural
+        if (benchPos === 'Ruck' && slotPos === 'Centre') return 8; // ruck rests as KF/C
+        if (benchPos === 'Full Back' && (slotPos === 'Half Back' || slotPos === 'Full Back')) return 6;
+        return 18; // poor fit
+      }
       const isMatchPos = benchP.pos === slotPos;
+      const penalty = posCompat(benchP.pos, slotPos);
+      if (penalty >= 18) return; // incompatible — skip this swap
       const benchOVR = effectiveOVR(benchP, isMatchPos ? slotPos : benchP.pos);
       const fieldOVR = effectiveOVR(fieldP, slotPos);
       const ovrGain = benchOVR - fieldOVR;
       const fatRelief = fieldFat - benchFat;
-      const posPenalty = isMatchPos ? 0 : 10;
+      const posPenalty = penalty;
       const urgentBoost = urgent ? 20 : fieldFat > 0.30 ? 8 : 0;
       const swapScore = ovrGain + fatRelief * 30 + urgentBoost - posPenalty;
 
@@ -3965,10 +4200,12 @@ function checkAutoInterchange() {
       if (!cpuBenchP) return;
       const cbFat = G.fatigue[cpuBenchP.id] || 0;
       if (cbFat >= cpuFieldFat - 0.04) return;
+      const cpuPenalty = posCompat(cpuBenchP.pos, cpuSlotPos);
+      if (cpuPenalty >= 18) return;
       const isMatch = cpuBenchP.pos === cpuSlotPos;
       const bOVR = effectiveOVR(cpuBenchP, isMatch ? cpuSlotPos : cpuBenchP.pos);
       const fOVR = effectiveOVR(cpuFieldP, cpuSlotPos);
-      const score = (bOVR - fOVR) + (cpuFieldFat - cbFat) * 30 + (cpuUrgent ? 20 : 0) - (isMatch ? 0 : 10);
+      const score = (bOVR - fOVR) + (cpuFieldFat - cbFat) * 30 + (cpuUrgent ? 20 : 0) - cpuPenalty;
       if (score > cpuBestScore) { cpuBestScore = score; cpuBestSwap = { cpuBenchP, cbi }; }
     });
 
@@ -4029,7 +4266,7 @@ function doForwardLead(lineup, isA) {
   rec(pHF,'k'); rec(pF,'m'); tireplayer(pF); tireplayer(pHF);
   pushChain(hi, fi, isA); G.ballIdx=fi; G.ballIsA=isA;
   const leadQual = (pF.stats.leading||60) > 80 ? 'burns his opponent on the lead' : (pF.stats.speed||60) > 75 ? 'finds space on the wing' : 'leads at the right time';
-  addCmt(pHF.name + ' hits ' + pF.name + ' — ' + leadQual + '!','');
+  addCmt(pHF.name + ' hits ' + pF.name + ' — ' + leadQual + '! ' + markCmt(pF.name),'');
   return true;
 }
 function doHardballContest(lineup, cpuLineup, isA) {
@@ -4048,7 +4285,7 @@ function doHardballContest(lineup, cpuLineup, isA) {
   const aW = Math.random() < sA/(sA+sB);
   rec(aW?rA:rB,'t'); tireplayer(rA); tireplayer(rB);
   checkInjuryChance(rA); checkInjuryChance(rB);
-  addCmt('Hardball! ' + (aW?rA.name:rB.name) + ' wins it at the contest!','');
+  addCmt('Hardball! ' + (aW?(rA&&rA.name?rA.name:'Your mid'):(rB&&rB.name?rB.name:'CPU mid')) + ' wins it at the contest!','');
   G.ballIsA = aW;
   const ci = pickCentre(aW ? G.lineup : G.cpu);
   pushChain(midSlots[3], ci, aW); G.ballIdx = ci;
@@ -4157,7 +4394,7 @@ function doRuck() {
   const acc = (aW?rA:rB) ? ((aW?rA:rB).stats.hitoutAcc || (aW?rA:rB).stats.hand || 60) : 60;
   const goesToOwnTeam = Math.random() < acc/99;
   const ballGoesA = aW ? goesToOwnTeam : !goesToOwnTeam;
-  addCmt('Ruck contest! ' + (aW?(rA?rA.name:'Your ruck'):(rB?rB.name:'CPU ruck')) + ' taps it ' + (goesToOwnTeam ? 'to their own side.' : '— but it goes against them!'), '');
+  addCmt('Ruck contest! ' + (aW?(rA&&rA.name?rA.name:'Your ruck'):(rB&&rB.name?rB.name:'CPU ruck')) + ' taps it ' + (goesToOwnTeam ? 'to their own side.' : '— but it goes against them!'), '');
   if(aW&&rA){rec(rA,'ho');rec(rA,'m');tireplayer(rA);} else if(!aW&&rB){rec(rB,'ho');rec(rB,'m');tireplayer(rB);}
   G.ballIsA=ballGoesA;
   const lu = ballGoesA ? G.lineup : G.cpu;
@@ -4333,7 +4570,7 @@ function simTick() {
           : bigLead && leading
           ? ['⚽ GOAL! '+pF.name+' — this is turning into a rout!','⚽ '+pF.name+' — piling on the misery now!']
           : ['⚽ GOAL! '+pF.name+' converts '+shotType+'!','⚽ BEAUTY! '+pF.name+' — what a finish!','⚽ GOAL! '+pF.name+' from '+rnd(['the pocket','deep forward','the top of the square','the boundary'])+'!','⚽ That\'s a major! '+pF.name+' delivers!'];
-        addCmt(rnd(cmts),'goal'); showGoalCelebration(pF,true); playSound('goal');
+        addCmt('⚽ '+goalCmt(pF.name, 'set shot'),'goal'); showGoalCelebration(pF,true); playSound('goal');
         // After goal — ball returns to centre for ruck contest
         setTimeout(function(){ G.bounce = true; }, 400);
       }else{
@@ -4343,7 +4580,7 @@ function simTick() {
           : bigLead && !leading
           ? ['⚽ CPU GOAL — '+pF.name+' — can they get back into this?']
           : ['⚽ CPU GOAL — '+pF.name+' slots it through!','⚽ CPU GOAL — '+pF.name+' punishes the turnover!','⚽ CPU major — '+pF.name+' from the set shot!'];
-        addCmt(rnd(cmts),'goal'); showGoalCelebration(pF,false); playSound('goal');
+        addCmt('⚽ '+goalCmt(pF.name, 'set shot'),'goal'); showGoalCelebration(pF,false); playSound('goal');
         // After goal — ball returns to centre for ruck contest
         setTimeout(function(){ G.bounce = true; }, 400);
       }
@@ -4351,7 +4588,7 @@ function simTick() {
       playSound('behind');
       if(aHas){
         G.sA.b++;rec(pF,'b');G.momentum=Math.min(1.0,G.momentum+0.08);fixOOPPairs(~~(Math.random()*2)+1);
-        addCmt(rnd(['Behind — '+pF.name+' just misses to the right.','Behind — '+pF.name+' clips the post.','Point — '+pF.name+' drifts left of centre.','Behind — '+pF.name+'\'s set shot leaks across the face.','Point only — '+pF.name+' couldn\'t quite convert.']),'behind');
+        addCmt(behindCmt(pF.name),'behind');
         // Kickout — defending FB gets the ball, no stat recorded
         // Rebound stat determines how far/well they clear it
         const defFB = G.cpu[15] || G.cpu[16] || G.cpu[17];
@@ -4363,7 +4600,7 @@ function simTick() {
         }
       }else{
         G.sB.b++;rec(pF,'b');G.momentum=Math.max(-1.0,G.momentum-0.08);
-        addCmt(rnd(['CPU behind — just wide!','CPU behind — clips the near post.','CPU point — drifts left.','CPU behind — the wind takes it across.']),'behind');
+        addCmt(behindCmt(pF.name),'behind');
         // Kickout — your FB gets the ball, no stat recorded
         const defFB = G.lineup[15] || G.lineup[16] || G.lineup[17];
         if (defFB) {
@@ -4691,7 +4928,7 @@ function simTick() {
     if (pF && pF.potential === 'pressure_fwd' && aHas && SLOTS[fi] && (SLOTS[fi].pos==='Full Forward'||SLOTS[fi].pos==='Half Forward') && Math.random() < 0.20) {
       G.ballIsA = true; G.ballIdx = fi; addCmt('⚡ PRESSURE! '+pF.name+' wins it in the forward 50!',''); }
     if (Math.random() < 0.08) {
-      addCmt(rnd([tackler.name+' tackles '+ballCarrier.name+' — held! Ball up!',ballCarrier.name+' is caught holding — ball up at the contest.','Held ball! '+tackler.name+' forces a ball up on '+ballCarrier.name+'.','Ball up — '+ballCarrier.name+' couldn\'t dispose under pressure from '+tackler.name+'.']),'');
+      addCmt(tackleCmt(tackler.name, ballCarrier.name),'');
       doStoppage('stoppage', fi);
     } else {
       addCmt(rnd([tackler.name+' lays a tackle on '+ballCarrier.name+'!','Big tackle from '+tackler.name+' — '+ballCarrier.name+' is caught!',tackler.name+' hunts '+ballCarrier.name+' down — '+(tackler.stats.tackle>75?'textbook tackle!':'wrestling him to ground!'),close?'Pressure tackle! '+tackler.name+' denies '+ballCarrier.name+'.':tackler.name+' wraps up '+ballCarrier.name+'.']),'');
@@ -5039,6 +5276,7 @@ function renderStats() {
   function addRow(p, i, fromBench) {
     if(!p)return;
     const s=PST[p.id]||{k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0};
+    if(s.m > s.k) s.m = s.k; // marks can't exceed kicks
     if(fromBench && (s.k+s.hb+s.m+s.t+s.g+s.b+s.ho)===0) return;
     const dis=s.k+s.hb,sl=fromBench||!isY?null:SLOTS[i],gb=s.g||s.b?s.g+'.'+s.b:'--';
     const hoStr=(p.pos==='Ruck'||s.ho>0)?String(s.ho||0):'—';
@@ -5107,8 +5345,9 @@ function showMatchSummary() {
   if (G.pgL && G.pgL.length) {
     G.lineup = G.pgL.map(function(p) { return (p && !G.injuries[p.id]) ? p : null; });
     G.bench  = G.pgB.map(function(p) { return (p && !G.injuries[p.id]) ? p : null; });
-    // Put injured players back into the pool so they show in squad editor
+    // Capture injured players BEFORE autoSquad so injury report can show them
     var allPgPlayers = G.pgL.concat(G.pgB).filter(Boolean);
+    G._gameInjuries = allPgPlayers.filter(function(p){ return G.injuries[p.id]; });
     allPgPlayers.forEach(function(p) {
       if (G.injuries[p.id] && !G.players.includes(p)) G.players.push(p);
     });
@@ -5124,8 +5363,8 @@ function showMatchSummary() {
   // Finals bonuses on top of division scaling
   let coins = 0;
   if (G.seasonMode) {
-    // Div4=Outback 250, Div3=Country 300, Div2=State 400, Div1=National 500
-    const divMult = [0, 2.5, 2.0, 1.5, 1.25][G.division] || 1.25;
+    // Div4=Outback 350, Div3=Country 450, Div2=State 600, Div1=National 800
+    const divMult = [0, 4.0, 3.0, 2.25, 1.75][G.division] || 1.75;
     let baseWin = 200, baseDraw = 75, baseLoss = 50;
 
     // Detect finals stage for bonus multiplier
@@ -5276,6 +5515,9 @@ function renderSummaryTable() {
   allPlayers.forEach(function(x){
     var p=x.p,i=x.i;
     var s=PST[p.id]||{k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0},dis=s.k+s.hb;
+    // Marks must be ≤ kicks (every mark leads to a kick or handball)
+    if (s.m > s.k) s.m = s.k;
+    if (s.m > dis) s.m = dis;
     var sl=i>=0&&isY?SLOTS[i]:null,gb=s.g||s.b?s.g+'.'+s.b:'--';
     var hoStr=(p.pos==='Ruck'||s.ho>0)?String(s.ho||0):'—';
     var fkStr=(s.ff||s.fa)?('<span style="color:#6abf40">'+(s.ff||0)+'</span>'+(s.fa?'/<span style="color:#e05050">'+s.fa+'</span>':'')):'—';
@@ -5442,25 +5684,22 @@ function generateTeamNames(count) {
 
 function genSeasonTeam(name) {
   // Full 23-player rarity pools per division — sampled randomly per player
-  // Designed to hit target team OVR averages: Div4≈56, Div3≈66, Div2≈75, Div1≈82
+  // Target OVRs: Div4=62, Div3=70, Div2=77, Div1=83
   var rarPools = {
-    1: ['superstar','superstar','superstar','superstar','superstar',               // 5 legends
-        'gun','gun','gun','gun','gun','gun','gun',           // 7 epics
-        'reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable',    // 8 rares
-        'fringe','fringe','fringe'],                          // 3 uncommon
-    2: ['superstar','superstar',                                          // 2 legends
-        'gun','gun','gun','gun',                                // 4 epics
-        'reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable', // 11 rares
-        'fringe','fringe','fringe','fringe','fringe',     // 5 uncommon
-        'local'],                                                  // 1 common
-    3: ['superstar',                                                   // 1 legend
-        'gun','gun',                                              // 2 epics
-        'reliable','reliable','reliable','reliable','reliable',                         // 5 rares
-        'fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe', // 9 uncommon
-        'local','local','local','local','local','local'],     // 6 common
-    4: ['reliable','reliable',                                              // 2 rares
-        'fringe','fringe','fringe','fringe','fringe','fringe','fringe', // 7 uncommon
-        'local','local','local','local','local','local','local','local','local','local','local','local','local','local'], // 14 common
+    1: ['superstar','superstar','superstar','superstar','superstar',
+        'gun','gun','gun','gun','gun','gun','gun','gun','gun','gun','gun','gun',
+        'reliable','reliable','reliable','reliable','reliable','reliable'],
+    2: ['superstar','superstar',
+        'gun','gun','gun','gun','gun','gun','gun',
+        'reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable',
+        'fringe','fringe','fringe','fringe','fringe','fringe'],
+    3: ['gun','gun','gun',
+        'reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable','reliable',
+        'fringe','fringe','fringe','fringe','fringe','fringe',
+        'local','local','local','local'],
+    4: ['reliable','reliable','reliable','reliable',
+        'fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe','fringe',
+        'local','local','local','local','local','local','local','local'],
   };
   var rp = rarPools[G.division] || rarPools[4];
 
@@ -5469,12 +5708,23 @@ function genSeasonTeam(name) {
     if (pos === 'Full Back')    { var r=Math.random(); return r<0.40?'small':r<0.85?'medium':'key'; }
     return null;
   }
+  // Higher divisions: tighter OVR spread (harder, more consistent opponents)
+  var tierOverride = null;
+  if (G.division === 1) tierOverride = {gun:{min:84,max:90},superstar:{min:91,max:97},reliable:{min:76,max:82}};
+  else if (G.division === 2) tierOverride = {gun:{min:82,max:89},reliable:{min:74,max:80}};
+  if (tierOverride) { Object.keys(tierOverride).forEach(function(k){ TIERS[k] = tierOverride[k]; }); }
+
   var field = SLOTS.map(function(sl){
     var arch = seasonArch(sl.pos);
     var p = gPlayer(sl.pos, rp[~~(Math.random()*rp.length)], arch);
     if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, name, false);
     return p;
   });
+
+  // Restore default tiers
+  if (tierOverride) {
+    TIERS.gun = {min:81,max:90}; TIERS.superstar = {min:91,max:97}; TIERS.reliable = {min:71,max:80};
+  }
   var benchPositions = ['Full Forward','Half Forward','Centre','Half Back','Full Back'];
   var bench = benchPositions.map(function(pos){
     var arch = seasonArch(pos);
@@ -5499,7 +5749,7 @@ function simSeasonGame(ovr1, ovr2) {
 function initSeason() {
   if (!G.players.length) { showScreen('screen-shop'); return; }
 
-  const LIST_CAP = 45;
+  const LIST_CAP = 35;
   if (G.players.length > LIST_CAP) {
     showScreen('screen-main');
     setTimeout(function() { startCullWizard(LIST_CAP); }, 200);
@@ -5573,20 +5823,39 @@ function initSeason() {
   // End of season — all players recover, injuries cleared
   G.injuries = {};
 
-  if (seasonNum > 1) {
-    generateFreeAgents();
-    var agingResults = agePlayers(seasonNum);
-    if (G.lineup.some(function(p){return !p;}) || G.bench.some(function(p){return !p;})) autoSquad();
+  // Stash season data for recap BEFORE anything gets cleared
+  G._recapData = {
+    seasonNum: seasonNum,
+    record: G.season ? Object.assign({}, G.season.myRecord) : {w:0,l:0,d:0,pf:0,pa:0},
+    champion: G.season ? G.season.champion : false,
+    finalist: G.season ? G.season.finalist : false,
+    division: G.division,
+    seasonStats: Object.assign({}, G.seasonStats),
+    ladder: getLadder ? getLadder().slice() : [],
+  };
+
+  // Season 1 — no recap or awards, go straight to season screen
+  if (seasonNum === 1) {
     save();
-    showSeasonRecap(seasonNum, agingResults, function() {
-      showAgingSummary(seasonNum, agingResults);
-    });
+    showScreen('screen-season');
+    renderSeasonScreen();
     return;
   }
 
+  // Season 2+ flow: Recap → Awards → Player Development → New Season
+  generateFreeAgents();
+  var agingResults = agePlayers(seasonNum);
+  if (G.lineup.some(function(p){return !p;}) || G.bench.some(function(p){return !p;})) autoSquad();
   save();
-  showScreen('screen-season');
-  renderSeasonScreen();
+
+  // Step 1: Season Recap
+  showSeasonRecap(seasonNum, agingResults, function() {
+    // Step 2: Awards Night
+    showAwardsNight(function() {
+      // Step 3: Player Development
+      showAgingSummary(seasonNum, agingResults);
+    });
+  });
 }
 
 // Simulate the CPU vs CPU games for a given round fixture
@@ -6026,20 +6295,96 @@ function renderFinalsBracket() {
   }
 }
 
+function showMatchPreview(fixture, onConfirm) {
+  showScreen('screen-preview');
+  var yourOVR = Math.round(teamOVR(G.lineup));
+  var oppField = fixture ? fixture.opp.field : G.cpu;
+  var oppName  = fixture ? (fixture.opp.name || 'CPU') : (G.cpuName || 'CPU');
+  var oppOVR   = Math.round(teamOVR(oppField));
+
+  document.getElementById('preview-title').textContent = 'Match Preview';
+
+  // Top 3 players by OVR for each team
+  function top3(players) {
+    return players.filter(Boolean)
+      .map(function(p){ return {p:p, ovr:calcOVR(p.stats,p.pos,p.pos)}; })
+      .sort(function(a,b){ return b.ovr-a.ovr; })
+      .slice(0,3);
+  }
+  var yourTop = top3(G.lineup.concat(G.bench));
+  var oppTop  = top3(oppField);
+
+  function ovrColor(ovr) {
+    return ovr >= 85 ? 'var(--gold)' : ovr >= 75 ? '#6abf40' : ovr >= 65 ? '#5aabff' : 'var(--text2)';
+  }
+
+  function playerRow(tp) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
+      + '<div><div style="font-size:12px;font-weight:700">' + tp.p.name + '</div>'
+      + '<div style="font-size:10px;color:var(--text3)">' + playerPosLabel(tp.p) + '</div></div>'
+      + '<div style="font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:900;color:' + ovrColor(tp.ovr) + '">' + tp.ovr + '</div>'
+      + '</div>';
+  }
+
+
+  var html = '';
+
+  // Matchup header
+  html += '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:16px">'
+    // Your team
+    + '<div style="text-align:center;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:12px 8px">'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + G.teamName + '</div>'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:48px;font-weight:900;color:' + ovrColor(yourOVR) + ';line-height:1">' + yourOVR + '</div>'
+    + '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Team OVR</div>'
+    + '</div>'
+    // VS
+    + '<div style="text-align:center"><div style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:900;color:var(--text3)">VS</div></div>'
+    // Opponent
+    + '<div style="text-align:center;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:12px 8px">'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + oppName + '</div>'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:48px;font-weight:900;color:' + ovrColor(oppOVR) + ';line-height:1">' + oppOVR + '</div>'
+    + '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Team OVR</div>'
+    + '</div>'
+    + '</div>';
+
+
+
+  // Best players columns
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+
+  // Your top 3
+  html += '<div><div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--blue-light);margin-bottom:6px">Your Best</div>';
+  yourTop.forEach(function(tp){ html += playerRow(tp); });
+  html += '</div>';
+
+  // Opp top 3
+  html += '<div><div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#e05050;margin-bottom:6px">Their Best</div>';
+  oppTop.forEach(function(tp){ html += playerRow(tp); });
+  html += '</div>';
+
+  html += '</div>';
+
+  document.getElementById('preview-content').innerHTML = html;
+  document.getElementById('preview-go-btn').onclick = onConfirm;
+}
+
 function startSeasonGame(fixture) {
   decrementInjuries();
-  G.seasonMode = true; G.qtr=0; G.sA={g:0,b:0}; G.sB={g:0,b:0}; G.qtrScores=[];
   G.cpu = fixture.opp.field; G.cpuBench = fixture.opp.bench;
   G.cpuName = fixture.opp.name || 'Computer';
+  G.seasonMode = true; G.qtr=0; G.sA={g:0,b:0}; G.sB={g:0,b:0}; G.qtrScores=[];
   G.momentum = 0; G.consecutiveScores = 0; G.playerForm = {};
-  document.getElementById('commentary').innerHTML = '';
-  initPST(G.lineup, G.cpu);
-  initFatigue([].concat(G.lineup, G.bench));
-  G.activeLine = [].concat(G.lineup);
-  G.pgL=[].concat(G.lineup); G.pgB=[].concat(G.bench);
+  G._pendingMilestones = []; G._gameInjuries = null; G._summaryLineup = null; G._summaryBench = null;
   G._currentFixture = fixture; G._isFinalGame = false;
   rollWeather();
-  startPreGame();
+  showMatchPreview(fixture, function() {
+    document.getElementById('commentary').innerHTML = '';
+    initPST(G.lineup, G.cpu);
+    initFatigue([].concat(G.lineup, G.bench));
+    G.activeLine = [].concat(G.lineup);
+    G.pgL=[].concat(G.lineup); G.pgB=[].concat(G.bench);
+    startPreGame();
+  });
 }
 
 function startFinalsGame(fix) {
@@ -6048,14 +6393,17 @@ function startFinalsGame(fix) {
   G.cpu = cpuEntry.team.field; G.cpuBench = cpuEntry.team.bench;
   G.cpuName = cpuEntry.name || 'Computer';
   G.momentum = 0; G.consecutiveScores = 0; G.playerForm = {};
-  document.getElementById('commentary').innerHTML = '';
-  initPST(G.lineup, G.cpu);
-  initFatigue([].concat(G.lineup, G.bench));
-  G.activeLine = [].concat(G.lineup);
-  G.pgL=[].concat(G.lineup); G.pgB=[].concat(G.bench);
+  G._pendingMilestones = []; G._gameInjuries = null; G._summaryLineup = null; G._summaryBench = null;
   G._currentFixture = null; G._isFinalGame = true; G._currentFinalFixture = fix;
   rollWeather();
-  startPreGame();
+  showMatchPreview(null, function() {
+    document.getElementById('commentary').innerHTML = '';
+    initPST(G.lineup, G.cpu);
+    initFatigue([].concat(G.lineup, G.bench));
+    G.activeLine = [].concat(G.lineup);
+    G.pgL=[].concat(G.lineup); G.pgB=[].concat(G.bench);
+    startPreGame();
+  });
 }
 
 // Generate and accumulate realistic player stats for a simulated game
@@ -6070,7 +6418,7 @@ function simPlayerStats(players, goalsScored, totalScore, behindsScored) {
   // Tackles: ~50-70 team total
   // Behinds: from simSeasonGame result
   const totalDis = 130 + ~~(Math.random() * 35);      // 130-165
-  const totalMarks = 38 + ~~(Math.random() * 18);     // 38-56
+  const totalMarks = 55 + ~~(Math.random() * 15);     // 55-70 per team (~110-140 total)
   const totalTackles = 48 + ~~(Math.random() * 22);   // 48-70
   const totalBehinds = behindsScored || ~~(goalsScored * (0.4 + Math.random()*0.4));
 
@@ -6113,9 +6461,30 @@ function simPlayerStats(players, goalsScored, totalScore, behindsScored) {
   active.forEach(function(p, i) {
     const share = weights[i] / totalW;
     const dis = Math.round(totalDis * share);
-    const k = Math.round(dis * (0.45 + Math.random() * 0.2));
+    const k = Math.round(dis * (0.50 + Math.random() * 0.2)); // slightly more kicks than hbs
     const hb = dis - k;
-    const m = Math.round(totalMarks * share);
+    // Marks use separate position weight — FFs take contested marks, not many
+    const MARK_WEIGHT = {
+      'Full Forward': p.archetype==='key' ? 1.4 : 0.5,
+      'Half Forward': 1.3,
+      'Centre':       1.3,   // up from 1.1
+      'Wingman':      1.4,   // up from 1.2
+      'Ruck':         0.6,
+      'Half Back':    1.4,
+      'Full Back':    p.archetype==='key' ? 1.6 : 1.1,  // key back up from 1.3
+    };
+    const mw = MARK_WEIGHT[p.pos] !== undefined ? MARK_WEIGHT[p.pos] : 1.0;
+    const markShare = Math.round(totalMarks * (weights[i] * mw) / active.reduce(function(s,q,j){ const MW={'Full Forward':q.archetype==='key'?1.4:0.5,'Half Forward':1.3,'Centre':1.3,'Wingman':1.4,'Ruck':0.6,'Half Back':1.4,'Full Back':q.archetype==='key'?1.6:1.1}; return s+weights[j]*(MW[q.pos]!==undefined?MW[q.pos]:1.0); },0));
+    const markCap = p.archetype==='key' && p.pos==='Full Back' ? 14  // key backs intercept lots
+                  : p.archetype==='key' ? 12
+                  : p.pos==='Half Back' ? 10
+                  : p.pos==='Half Forward' ? 9
+                  : p.pos==='Centre' ? 9    // up from 8
+                  : p.pos==='Wingman' ? 9   // up from 8
+                  : p.pos==='Full Back' ? 8
+                  : p.pos==='Ruck' ? 5
+                  : 5; // small/med FF
+    const m = Math.min(markCap, Math.min(k, Math.floor(k*0.65), markShare)); // marks always ≤ kicks
     const t = Math.round(totalTackles * share);
     const g = goalScorers.filter(function(id){ return id === p.id; }).length;
     const b = behindScorers.filter(function(id){ return id === p.id; }).length;
@@ -6135,7 +6504,10 @@ function simPlayerStats(players, goalsScored, totalScore, behindsScored) {
     const share = weights[i] / totalW;
     const dis = Math.round(totalDis * share);
     const k = Math.round(dis * (0.45 + Math.random() * 0.2));
-    simPST[p.id] = { k:k, hb:dis-k, m:Math.round(totalMarks * share), t:Math.round(totalTackles * share),
+    const simShare = weights[i] / totalW;
+    const simMarkShare = Math.round(totalMarks * simShare);
+    const simMarkCap = (p.pos==='Full Forward'||p.pos==='Full Back')?(p.archetype==='key'?12:8):(p.pos==='Half Back'||p.pos==='Half Forward')?7:p.pos==='Ruck'?5:6;
+    simPST[p.id] = { k:k, hb:dis-k, m:Math.min(simMarkCap,simMarkShare), t:Math.round(totalTackles * simShare),
       g: goalScorers.filter(function(id){ return id === p.id; }).length };
   });
   awardBrownlowVotes(active, simPST, totalScore, 0, true);
@@ -6491,7 +6863,7 @@ function showProfile(p, slotIdx) {
       + '<div style="font-size:10px;color:var(--text2)">' + (p.traitDesc || (trait ? trait.desc : '')) + '</div></div></div>';
   }
   br.innerHTML = '<span style="font-size:14px;letter-spacing:2px;color:'+starsColor(p.stars||0)+'">'+starsStr(p.stars||0)+'</span>'
-    + (injInfo ? ' <span style="font-size:10px;font-weight:700;color:#e05050;background:rgba(224,80,80,0.12);border:1px solid rgba(224,80,80,0.3);border-radius:6px;padding:2px 7px;margin-left:4px">🚑 '+injInfo.name+' — '+injInfo.roundsRemaining+'r out</span>' : '')
+    + (injInfo && injInfo.name ? ' <span style="font-size:10px;font-weight:700;color:#e05050;background:rgba(224,80,80,0.12);border:1px solid rgba(224,80,80,0.3);border-radius:6px;padding:2px 7px;margin-left:4px">🚑 '+injInfo.name+' — '+injInfo.roundsRemaining+'r out</span>' : '')
     + (potentialBadge ? '<br>' + potentialBadge : '');
 
   // Stat grid — squares layout
@@ -6735,7 +7107,8 @@ function updateCareerRecords(seasonNum, myRecord, result) {
 }
 
 // ─── AWARDS NIGHT ─────────────────────────────────────────────────────────
-function showAwardsNight() {
+function showAwardsNight(onNext) {
+  G._awardsOnNext = onNext || null;
   showScreen('screen-awards');
   renderAwardsScreen();
 }
@@ -6770,30 +7143,33 @@ function renderAwardsScreen() {
   if (!list) return;
   list.innerHTML = '';
 
+  if (!players.length) { list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No season stats yet. Complete a season to see awards.</div>'; return; }
   // Best on Ground (season) — most disposals
-  const topDis = players.sort((a,b)=>(b.k+b.hb)-(a.k+a.hb))[0];
-  if (topDis) list.appendChild(award('🥇','Season Best & Fairest', topDis.name,
-    (topDis.k+topDis.hb)+' disposals, '+topDis.g+' goals over '+topDis.games+' games', true));
+  const topDis = players.slice().sort((a,b)=>(b.k+b.hb)-(a.k+a.hb))[0];
+  const myIds = new Set(G.players.map(function(p){return p&&p.name;}));
+  function isYours(name){ return myIds.has(name); }
+  if (topDis && topDis.name) list.appendChild(award('🥇','Season Best & Fairest', topDis.name,
+    (topDis.k+topDis.hb)+' disposals, '+topDis.g+' goals over '+topDis.games+' games', isYours(topDis.name)));
 
   // Top goal kicker
   // Brownlow Medal — most votes this season
-  const brownlowWinner = [...players].sort((a,b)=>(b.brownlow||0)-(a.brownlow||0))[0];
-  if (brownlowWinner && brownlowWinner.brownlow > 0) list.appendChild(award('🏅','Brownlow Medal', brownlowWinner.name,
-    brownlowWinner.brownlow+' votes this season', true));
+  const brownlowWinner = players.slice().sort((a,b)=>(b.brownlow||0)-(a.brownlow||0))[0];
+  if (brownlowWinner && brownlowWinner.name && brownlowWinner.brownlow > 0) list.appendChild(award('🏅','Brownlow Medal', brownlowWinner.name,
+    brownlowWinner.brownlow+' votes this season', isYours(brownlowWinner.name)));
 
   // Top hitout getter (Ruck award)
-  const topHitout = [...players].filter(p=>p.pos==='Ruck'||p.ho>0).sort((a,b)=>(b.ho||0)-(a.ho||0))[0];
-  if (topHitout && topHitout.ho > 0) list.appendChild(award('💪','Ruck of the Year', topHitout.name,
-    topHitout.ho+' hitouts', true));
+  const topHitout = players.slice().filter(p=>p.pos==='Ruck'||p.ho>0).sort((a,b)=>(b.ho||0)-(a.ho||0))[0];
+  if (topHitout && topHitout.name && topHitout.ho > 0) list.appendChild(award('💪','Ruck of the Year', topHitout.name,
+    topHitout.ho+' hitouts', isYours(topHitout.name)));
 
-  const topGoal = [...players].sort((a,b)=>b.g-a.g)[0];
-  if (topGoal) list.appendChild(award('🏉','Season Top Goal Kicker', topGoal.name,
-    topGoal.g+' goals in '+topGoal.games+' games', true));
+  const topGoal = players.slice().sort((a,b)=>b.g-a.g)[0];
+  if (topGoal && topGoal.name) list.appendChild(award('🏉','Season Top Goal Kicker', topGoal.name,
+    topGoal.g+' goals in '+topGoal.games+' games', isYours(topGoal.name)));
 
   // Best defender (most tackles)
-  const topTackle = [...players].sort((a,b)=>b.t-a.t)[0];
-  if (topTackle) list.appendChild(award('🛡️','Best Defender', topTackle.name,
-    topTackle.t+' tackles, '+topTackle.m+' marks', true));
+  const topTackle = players.slice().sort((a,b)=>b.t-a.t)[0];
+  if (topTackle && topTackle.name) list.appendChild(award('🛡️','Best Defender', topTackle.name,
+    topTackle.t+' tackles, '+topTackle.m+' marks', isYours(topTackle.name)));
 
   // Season result card
   const result = cr._lastResult || 'miss';
@@ -6831,21 +7207,39 @@ function renderAwardsScreen() {
   const acts = document.getElementById('awards-actions');
   if (acts) {
     acts.innerHTML = '';
-    const btnSeason = document.createElement('button');
-    btnSeason.className = 'btn primary lg';
-    btnSeason.textContent = 'Back to Season';
-    btnSeason.onclick = function() { showScreen('screen-season'); renderSeasonScreen(); };
-    acts.appendChild(btnSeason);
-    const btnHome = document.createElement('button');
-    btnHome.className = 'btn lg';
-    btnHome.textContent = '⌂ Home';
-    btnHome.onclick = function() { showScreen('screen-home'); };
-    acts.appendChild(btnHome);
-    const btnNew = document.createElement('button');
-    btnNew.className = 'btn lg';
-    btnNew.textContent = 'New Season';
-    btnNew.onclick = function() { G.seasonStats = {}; initSeason(); };
-    acts.appendChild(btnNew);
+
+    if (G._awardsOnNext) {
+      // In end-of-season flow — only show "Player Development →"
+      const btnNext = document.createElement('button');
+      btnNext.className = 'btn primary lg';
+      btnNext.style.width = '100%';
+      btnNext.textContent = '📈 Player Development →';
+      btnNext.onclick = function() {
+        var cb = G._awardsOnNext;
+        G._awardsOnNext = null;
+        cb();
+      };
+      acts.appendChild(btnNext);
+    } else {
+      // Manual awards access from home nav
+      const btnSeason = document.createElement('button');
+      btnSeason.className = 'btn lg';
+      btnSeason.textContent = 'Back to Season';
+      btnSeason.onclick = function() { showScreen('screen-season'); renderSeasonScreen(); };
+      acts.appendChild(btnSeason);
+      const btnHome = document.createElement('button');
+      btnHome.className = 'btn lg';
+      btnHome.textContent = '⌂ Home';
+      btnHome.onclick = function() { showScreen('screen-home'); };
+      acts.appendChild(btnHome);
+      if (!G.season || G.season.finished) {
+        const btnNew = document.createElement('button');
+        btnNew.className = 'btn lg';
+        btnNew.textContent = '🏆 Start New Season';
+        btnNew.onclick = function() { initSeason(); };
+        acts.appendChild(btnNew);
+      }
+    }
   }
 }
 
@@ -6857,10 +7251,9 @@ function divName(d) {
 }
 
 function applyPromoRelegation(finalPosition) {
-  // Win the premiership → promote. Finish in bottom 2 → relegate.
-  // Bottom 2 threshold varies by division size
+  // Only the Grand Final winner promotes. Bottom 2 on ladder relegate.
   var numTeams = G.season ? (G.season.numTeams || 10) : 10;
-  var relegZone = numTeams - 2; // bottom 2 spots (0-indexed positions >= this)
+  var relegZone = numTeams - 2;
   if (G.season && G.season.champion && G.division > 1) {
     G.division = Math.max(1, G.division - 1);
     return 'promoted';
@@ -7426,14 +7819,24 @@ function agePlayers(seasonNum) {
 }
 
 function generateFreeAgents() {
-  const rarPool = ['local','local','fringe','fringe','fringe','reliable','reliable','gun'];
+  // Veteran free agents: age 26-30, OVR×5 signing cost, max reliable tier
+  const rarPool = ['local','local','fringe','fringe','fringe','reliable','reliable','reliable'];
   G.freeAgents = [];
-  for (let i = 0; i < 15; i++) {
-    const rar = rarPool[~~(Math.random() * rarPool.length)];
-    const pos = POSLIST[~~(Math.random() * POSLIST.length)];
-    const p = gPlayer(pos, rar);
-    // Free agents are 20-30 years old
-    p.age = 20 + ~~(Math.random() * 11);
+  var positions = ['Full Forward','Full Forward','Half Forward','Half Forward','Centre','Centre','Wingman','Wingman','Ruck','Half Back','Half Back','Full Back','Full Back','Full Forward','Half Back'];
+  for (var i = 0; i < 15; i++) {
+    var rar = rarPool[~~(Math.random() * rarPool.length)];
+    var pos = positions[i % positions.length];
+    var p = gPlayer(pos, rar);
+    p.age = 26 + ~~(Math.random() * 5); // 26-30
+    // Adjust stats to match age — veterans are developed
+    var ovr = calcOVR(p.stats, p.pos, p.pos);
+    var STAT_KEYS = ['kick','hand','mark','tackle','speed','strength','stamina'];
+    // Give them 3-5 years of development
+    var devYears = p.age - 22;
+    for (var y = 0; y < devYears; y++) {
+      var shuffled = STAT_KEYS.slice().sort(function(){ return Math.random()-0.5; });
+      shuffled.slice(0,2).forEach(function(k){ p.stats[k] = Math.min(99, p.stats[k] + 1 + ~~(Math.random()*3)); });
+    }
     p.peakOvr = calcOVR(p.stats, p.pos, p.pos);
     G.freeAgents.push(p);
   }
@@ -7621,58 +8024,68 @@ function renderAchievementsScreen() {
 function showSeasonRecap(seasonNum, agingResults, onNext) {
   showScreen('screen-recap');
   var el = document.getElementById('recap-content');
-  var s = G.season;
-  var r = s.myRecord;
+
+  // Use stashed recap data — G.season may have changed by now
+  var rd = G._recapData || {};
+  var r = rd.record || {w:0,l:0,d:0,pf:0,pa:0};
   var pts = r.w*4 + r.d*2;
-  var pct = r.pa > 0 ? ((r.pf/r.pa)*100).toFixed(1) : '100';
-  var won = s.champion;
-  var finalist = s.finalist;
+  var pct = r.pa > 0 ? ((r.pf/r.pa)*100).toFixed(1) : '100.0';
+  var won = rd.champion || false;
+  var finalist = rd.finalist || false;
+  var div = rd.division || G.division;
 
-  // Season result banner
-  var resultColor = won ? 'var(--gold)' : finalist ? '#6abf40' : r.w > r.l ? '#5aabff' : '#e05050';
-  var resultText = won ? '🏆 Premiers!' : finalist ? '🎖️ Finals Appearance' : r.w > r.l ? '✅ Winning Season' : r.w === r.l ? '➡️ Even Season' : '❌ Tough Season';
+  var resultColor = won ? 'var(--gold)' : finalist ? '#6abf40' : r.w > r.l ? '#5aabff' : r.w === r.l ? 'var(--text2)' : '#e05050';
+  var resultText  = won ? '🏆 Premiers!' : finalist ? '🎖️ Finals Appearance' : r.w > r.l ? '✅ Winning Season' : r.w === r.l ? '➡️ Even Season' : '❌ Tough Season';
 
-  // Top performers this season
-  var statsArr = Object.keys(G.seasonStats).map(function(id){ return G.seasonStats[id]; });
-  statsArr = statsArr.filter(function(s){ return s.games > 0; });
-  var topDisp = statsArr.slice().sort(function(a,b){ return (b.k+b.hb)-(a.k+a.hb); })[0];
-  var topGoal = statsArr.slice().sort(function(a,b){ return b.g-a.g; })[0];
-  var topTackle = statsArr.slice().sort(function(a,b){ return b.t-a.t; })[0];
+  // Stats from stashed data
+  var statsArr = Object.values(rd.seasonStats || G.seasonStats).filter(function(s){ return s.games > 0; });
+  var topDisp  = statsArr.slice().sort(function(a,b){ return (b.k+b.hb)-(a.k+a.hb); })[0];
+  var topGoal  = statsArr.slice().sort(function(a,b){ return b.g-a.g; })[0];
+  var topBrown = statsArr.slice().sort(function(a,b){ return (b.brownlow||0)-(a.brownlow||0); })[0];
 
-  var html = '<div style="text-align:center;padding:16px 0 20px;border-bottom:1px solid var(--border)">'
-    + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Season '+seasonNum+' Complete</div>'
-    + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:28px;font-weight:900;color:'+resultColor+';margin:6px 0">'+resultText+'</div>'
-    + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:800;color:var(--text)">'+r.w+'W '+r.l+'L '+r.d+'D</div>'
-    + '<div style="font-size:12px;color:var(--text3);margin-top:2px">'+pts+' pts · '+pct+'% · Division '+G.division+'</div>'
+  // Ladder position from stashed ladder
+  var ladder = rd.ladder || (getLadder ? getLadder() : []);
+  var myPos = 1;
+  for (var li = 0; li < ladder.length; li++) { if (ladder[li].isYou) { myPos = li + 1; break; } }
+  var ordinal = myPos === 1 ? 'st' : myPos === 2 ? 'nd' : myPos === 3 ? 'rd' : 'th';
+  var posColor = myPos === 1 ? 'var(--gold)' : myPos <= 4 ? '#6abf40' : 'var(--text)';
+
+  var html = '';
+
+  // Result banner
+  html += '<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(0,0,0,0.3),transparent);border-radius:12px;margin-bottom:12px;border:1px solid var(--border2)">'
+    + '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:4px">Season '+seasonNum+' Complete</div>'
+    + '<div style="font-size:30px;font-weight:900;color:'+resultColor+';margin:6px 0;line-height:1">'+resultText+'</div>'
+    + '<div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px">'+r.w+'W — '+r.l+'L — '+r.d+'D</div>'
+    + '<div style="font-size:12px;color:var(--text3)">'+pts+' pts &nbsp;·&nbsp; '+pct+'% &nbsp;·&nbsp; Division '+div+'</div>'
     + '</div>';
 
-  // Season awards
-  html += '<div style="margin-top:16px">';
-  html += '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:8px">Season Highlights</div>';
+  // Final ladder position — prominent
+  html += '<div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:14px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;margin-bottom:12px">'
+    + '<div style="text-align:center">'
+    + '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3)">Final Ladder</div>'
+    + '<div style="font-size:52px;font-weight:900;color:'+posColor+';line-height:1">'+myPos+ordinal+'</div>'
+    + '<div style="font-size:11px;color:var(--text3)">of '+ladder.length+' teams</div>'
+    + '</div>'
+    + '</div>';
 
-  function statCard(icon, label, player, stat) {
-    if (!player) return '';
+  // Highlights
+  html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:8px">Season Highlights</div>';
+
+  function statCard(icon, label, name, pos, stat, sub) {
+    if (!name) return '';
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">'
-      + '<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">'+icon+' '+label+'</div>'
-      + '<div style="font-weight:700;font-size:14px;margin-top:1px">'+player.name+'</div>'
-      + '<div style="font-size:11px;color:var(--text2)">'+player.games+' games</div></div>'
-      + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:26px;font-weight:900;color:var(--gold)">'+stat+'</div>'
+      + '<div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">'+icon+' '+label+'</div>'
+      + '<div style="font-weight:700;font-size:14px;margin-top:1px">'+name+'</div>'
+      + '<div style="font-size:10px;color:var(--text3)">'+pos+(sub?' · '+sub:'')+'</div></div>'
+      + '<div style="font-size:28px;font-weight:900;color:var(--gold)">'+stat+'</div>'
       + '</div>';
   }
 
-  if (topDisp) html += statCard('📊','Most Disposals', topDisp, topDisp.k+topDisp.hb);
-  if (topGoal) html += statCard('🏉','Top Goal Kicker', topGoal, topGoal.g);
-  if (topTackle) html += statCard('💪','Most Tackles', topTackle, topTackle.t);
+  if (topGoal)  html += statCard('🏉', 'Top Goal Kicker',   topGoal.name,  topGoal.pos||'',  topGoal.g, topGoal.games+'g');
+  if (topDisp)  html += statCard('📊', 'Most Disposals',    topDisp.name,  topDisp.pos||'',  topDisp.k+topDisp.hb, topDisp.games+'g');
+  if (topBrown && topBrown.brownlow > 0) html += statCard('🏅', 'Brownlow Leader', topBrown.name, topBrown.pos||'', topBrown.brownlow+' votes', topBrown.games+'g');
 
-  // Ladder position
-  var ladder = getLadder();
-  var myPos = ladder.findIndex(function(e){ return e.isYou; }) + 1;
-  html += '<div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;text-align:center">'
-    + '<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">Final Ladder Position</div>'
-    + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:40px;font-weight:900;color:'+(myPos<=4?'var(--gold)':'var(--text)')+'">'+myPos+(myPos===1?'st':myPos===2?'nd':myPos===3?'rd':'th')+'</div>'
-    + '</div>';
-
-  html += '</div>';
   el.innerHTML = html;
 
   var btn = document.getElementById('recap-next-btn');
@@ -7753,11 +8166,11 @@ function showAgingSummary(seasonNum, agingResults) {
 
   const acts = document.getElementById('aging-actions');
   acts.innerHTML = '';
-  const btn1 = document.createElement('button'); btn1.className = 'btn primary lg'; btn1.style.flex = '1';
+  const btn1 = document.createElement('button'); btn1.className = 'btn lg'; btn1.style.flex = '1';
   btn1.textContent = '🔄 Trade Market'; btn1.onclick = function(){ showScreen('screen-trade'); setTradeTab('buy'); };
   acts.appendChild(btn1);
-  const btn2 = document.createElement('button'); btn2.className = 'btn lg'; btn2.style.flex = '1';
-  btn2.textContent = 'Start Season →'; btn2.onclick = function(){ showScreen('screen-season'); renderSeasonScreen(); };
+  const btn2 = document.createElement('button'); btn2.className = 'btn primary lg'; btn2.style.flex = '1';
+  btn2.textContent = '🏆 Start New Season →'; btn2.onclick = function(){ initSeason(); };
   acts.appendChild(btn2);
 }
 
@@ -7766,7 +8179,7 @@ let _tradeTab = 'sell';
 
 function setTradeTab(tab) {
   _tradeTab = tab;
-  ['sell','buy','hol'].forEach(function(t) {
+  ['sell','trade','buy','hol'].forEach(function(t) {
     const el = document.getElementById('trade-tab-' + t);
     if (el) el.className = 'trade-tab' + (t === tab ? ' active' : '');
   });
@@ -7780,6 +8193,7 @@ function renderTradeContent() {
   updCoins();
 
   if (_tradeTab === 'sell') renderSellPlayers(el);
+  else if (_tradeTab === 'trade') renderTradeOffer(el);
   else if (_tradeTab === 'buy') renderFreeAgents(el);
   else renderHallOfSuperstars(el);
 }
@@ -7840,36 +8254,210 @@ function renderFreeAgents(el) {
   el.appendChild(info);
 
   G.freeAgents.forEach(function(p, i) {
-    const ovr = calcOVR(p.stats, p.pos, p.pos);
-    const val = playerValue(p);
-    const age = p.age || 25;
-    const canAfford = G.coins >= val;
-    const row = document.createElement('div'); row.className = 'trade-player-row';
+    var ovr = calcOVR(p.stats, p.pos, p.pos);
+    var cost = faSigningCost(p);
+    var age = p.age || 25;
+    var canAfford = G.coins >= cost;
+    var row = document.createElement('div'); row.className = 'trade-player-row';
+    row.style.cursor = 'pointer';
     row.innerHTML = '<div class="trade-ovr" style="color:' + rarColor(p.rar) + '">' + ovr + '</div>'
       + '<div class="trade-info">'
         + '<div class="trade-name">' + p.name + '</div>'
-        + '<div class="trade-meta">' + p.pos + ' · <span class="age-badge ' + ageClass(age) + '">Age ' + age + ' ' + ageLabel(age) + '</span> · <span class="badge ' + starsColor(p.stars||0) + '";font-size:10px;letter-spacing:1px">' + starsStr(p.stars||0) + '</span></div>'
+        + '<div class="trade-meta">' + playerPosLabel(p) + ' · <span class="age-badge ' + ageClass(age) + '">Age ' + age + '</span> · ' + starsStr(p.stars||0) + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);margin-top:2px">Kick ' + p.stats.kick + ' · Hand ' + p.stats.hand + ' · Speed ' + p.stats.speed + ' · Stam ' + p.stats.stamina + '</div>'
       + '</div>'
       + '<div style="text-align:right;flex-shrink:0">'
-        + '<div class="trade-price">🪙 ' + val.toLocaleString() + '</div>'
-        + '<button class="trade-btn buy" ' + (canAfford?'':'disabled') + ' onclick="signFreeAgent(' + i + ')">Sign</button>'
+        + '<div class="trade-price">🪙 ' + cost.toLocaleString() + '</div>'
+        + '<button class="trade-btn buy" ' + (canAfford?'':'disabled style="opacity:0.4"') + ' onclick="signFreeAgent(' + i + ')">Sign</button>'
       + '</div>';
     el.appendChild(row);
   });
 }
 
 function signFreeAgent(idx) {
-  const p = G.freeAgents[idx];
+  var p = G.freeAgents[idx];
   if (!p) return;
-  const val = playerValue(p);
-  if (G.coins < val) { return; }
-  // Sign without confirm — trade screen context is clear
-  G.coins -= val;
+  var cost = faSigningCost(p);
+  if (G.coins < cost) return;
+  G.coins -= cost;
   G.players.push(p);
   G.freeAgents.splice(idx, 1);
-  // Record HOF if epic/legend
   if (p.rar === 'gun' || p.rar === 'superstar') recordHof(p, G.teamName, true);
   save(); updCoins(); renderTradeContent();
+  if (G.players.length > LIST_CAP) setTimeout(function(){ startCullWizard(LIST_CAP); }, 300);
+}
+
+
+// ─── TRADE SYSTEM ─────────────────────────────────────────────────────────────
+var _tradeTarget = null;      // The CPU player being targeted
+var _tradeOfferIds = [];      // Player IDs the user is offering
+var _tradeCoins = 0;          // Extra coins offered
+
+function renderTradeOffer(el) {
+  // Generate a trade market of CPU players if not cached
+  if (!G._tradeMarket || G._tradeMarket.length === 0) refreshTradeMarket();
+
+  var html = '<div style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:8px;background:var(--bg3);border-radius:7px">'
+    + '💡 Select a CPU player to target, then build your offer. CPU accepts if your offer matches their value.</div>';
+  el.innerHTML = html;
+
+  // Market header
+  var mHead = document.createElement('div');
+  mHead.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
+  mHead.innerHTML = '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)">Trade Market</div>'
+    + '<button class="btn sm" onclick="refreshTradeMarket();renderTradeContent()">🔄 Refresh</button>';
+  el.appendChild(mHead);
+
+  // Trade market list
+  var market = document.createElement('div');
+  G._tradeMarket.forEach(function(p, i) {
+    var ovr = calcOVR(p.stats, p.pos, p.pos);
+    var val = tradeValue(p);
+    var age = p.age || 25;
+    var isTarget = _tradeTarget && _tradeTarget.id === p.id;
+    var row = document.createElement('div');
+    row.className = 'trade-player-row' + (isTarget ? ' selected' : '');
+    if (isTarget) row.style.cssText = 'border-color:var(--gold);background:rgba(250,199,117,0.08)';
+    row.innerHTML = '<div class="trade-ovr" style="color:' + rarColor(p.rar) + '">' + ovr + '</div>'
+      + '<div class="trade-info">'
+        + '<div class="trade-name">' + p.name + '</div>'
+        + '<div class="trade-meta">' + playerPosLabel(p) + ' · Age ' + age + ' · ' + starsStr(p.stars||0) + '</div>'
+        + '<div style="font-size:10px;color:var(--text3);margin-top:1px">Trade value: <b style="color:var(--gold)">🪙 ' + val.toLocaleString() + '</b></div>'
+      + '</div>'
+      + '<button class="trade-btn" style="background:' + (isTarget?'var(--gold)':'var(--bg4)') + ';color:' + (isTarget?'#000':'var(--text)') + '" onclick="selectTradeTarget(' + i + ')">' + (isTarget ? '✓ Selected' : 'Target') + '</button>';
+    market.appendChild(row);
+  });
+  el.appendChild(market);
+
+  // Offer builder — only if target selected
+  if (!_tradeTarget) return;
+
+  var offerWrap = document.createElement('div');
+  offerWrap.style.cssText = 'margin-top:16px;padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px';
+
+  var targetVal = tradeValue(_tradeTarget);
+  var offerVal = _tradeOfferIds.reduce(function(s, id) {
+    var p = G.players.find(function(pl){ return pl.id === id; });
+    return s + (p ? tradeValue(p) : 0);
+  }, 0) + (_tradeCoins || 0);
+  var pct = targetVal > 0 ? Math.round(offerVal / targetVal * 100) : 0;
+  var pctColor = pct >= 90 ? '#6abf40' : pct >= 60 ? '#EF9F27' : '#e05050';
+
+  offerWrap.innerHTML = '<div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:10px">Your Offer for ' + _tradeTarget.name + '</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      + '<div style="font-size:11px;color:var(--text3)">Their value: <b>🪙 ' + targetVal.toLocaleString() + '</b></div>'
+      + '<div style="font-size:12px;font-weight:800;color:' + pctColor + '">' + pct + '% matched</div>'
+    + '</div>';
+
+  // Player offer list
+  var yourPlayers = G.players.filter(function(p){ return _tradeTarget && p.id !== _tradeTarget.id; });
+  yourPlayers.forEach(function(p) {
+    var inOffer = _tradeOfferIds.indexOf(p.id) !== -1;
+    var pVal = tradeValue(p);
+    var age = p.age || 25;
+    var pRow = document.createElement('div');
+    pRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:4px;background:' + (inOffer?'rgba(106,191,64,0.1)':'var(--bg4)') + ';border:1px solid ' + (inOffer?'rgba(106,191,64,0.4)':'var(--border)') + ';cursor:pointer';
+    pRow.innerHTML = '<input type="checkbox" ' + (inOffer?'checked':'') + ' style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">'
+      + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.name + '</div>'
+        + '<div style="font-size:10px;color:var(--text3)">' + playerPosLabel(p) + ' · Age ' + age + ' · ' + calcOVR(p.stats,p.pos,p.pos) + ' OVR</div>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--gold);font-weight:700;flex-shrink:0">🪙 ' + pVal.toLocaleString() + '</div>';
+    pRow.onclick = function(e) {
+      if (e.target.tagName === 'INPUT') return;
+      toggleTradeOffer(p.id);
+    };
+    pRow.querySelector('input').onchange = function() { toggleTradeOffer(p.id); };
+    offerWrap.appendChild(pRow);
+  });
+
+  // Coins slider
+  var maxCoins = Math.min(G.coins, targetVal * 2);
+  var coinRow = document.createElement('div');
+  coinRow.style.cssText = 'margin-top:10px;padding:8px;background:var(--bg4);border-radius:7px';
+  coinRow.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">'
+    + '<span style="color:var(--text2)">+ Add coins to sweeten deal</span>'
+    + '<span id="trade-coins-label" style="color:var(--gold);font-weight:700">🪙 ' + (_tradeCoins||0).toLocaleString() + '</span>'
+    + '</div>'
+    + '<input type="range" min="0" max="' + maxCoins + '" step="25" value="' + (_tradeCoins||0) + '" style="width:100%;accent-color:var(--gold)" oninput="_tradeCoins=parseInt(this.value);document.getElementById(&quot;trade-coins-label&quot;).textContent=&quot;🪙 &quot;+_tradeCoins.toLocaleString();renderTradeContent()">';
+  offerWrap.appendChild(coinRow);
+
+  // Submit button
+  var submitRow = document.createElement('div');
+  submitRow.style.cssText = 'display:flex;gap:8px;margin-top:12px';
+  var canSubmit = _tradeOfferIds.length > 0 || _tradeCoins > 0;
+  submitRow.innerHTML = '<button class="btn primary lg" style="flex:1" ' + (canSubmit?'':'disabled style="opacity:0.4"') + ' onclick="submitTradeOffer()">📨 Send Offer (' + pct + '% value)</button>'
+    + '<button class="btn sm danger" onclick="_tradeTarget=null;_tradeOfferIds=[];_tradeCoins=0;renderTradeContent()">Cancel</button>';
+  offerWrap.appendChild(submitRow);
+  el.appendChild(offerWrap);
+}
+
+function refreshTradeMarket() {
+  // Generate 8 CPU players across positions for trade
+  var rarPool = ['fringe','reliable','reliable','gun','gun','gun','superstar','superstar'];
+  G._tradeMarket = [];
+  var positions = ['Full Forward','Half Forward','Centre','Wingman','Ruck','Half Back','Full Back','Centre'];
+  positions.forEach(function(pos, i) {
+    var rar = rarPool[i % rarPool.length];
+    var p = gPlayer(pos, rar);
+    p.age = 18 + ~~(Math.random() * 10);
+    G._tradeMarket.push(p);
+  });
+  _tradeTarget = null; _tradeOfferIds = []; _tradeCoins = 0;
+}
+
+function selectTradeTarget(idx) {
+  _tradeTarget = G._tradeMarket[idx];
+  _tradeOfferIds = []; _tradeCoins = 0;
+  renderTradeContent();
+}
+
+function toggleTradeOffer(id) {
+  var idx = _tradeOfferIds.indexOf(id);
+  if (idx === -1) _tradeOfferIds.push(id);
+  else _tradeOfferIds.splice(idx, 1);
+  renderTradeContent();
+}
+
+function submitTradeOffer() {
+  if (!_tradeTarget) return;
+  var targetVal = tradeValue(_tradeTarget);
+  var offerVal = _tradeOfferIds.reduce(function(s, id) {
+    var p = G.players.find(function(pl){ return pl.id === id; });
+    return s + (p ? tradeValue(p) : 0);
+  }, 0) + (_tradeCoins || 0);
+
+  var pct = targetVal > 0 ? offerVal / targetVal : 0;
+  var accepted = pct >= 0.90;
+
+  if (!accepted) {
+    var needed = Math.max(0, Math.round((targetVal * 0.90 - offerVal + 4) / 5) * 5);
+    alert('❌ Trade Rejected!\n\nYour offer is ' + Math.round(pct*100) + '% of their value. You need roughly 🪙' + needed.toLocaleString() + ' more in player value or coins.');
+    return;
+  }
+
+  // Execute trade
+  if (_tradeCoins > 0) {
+    if (G.coins < _tradeCoins) { alert('Not enough coins!'); return; }
+    G.coins -= _tradeCoins;
+  }
+  // Remove offered players
+  _tradeOfferIds.forEach(function(id) {
+    G.players = G.players.filter(function(p){ return p.id !== id; });
+    G.lineup = G.lineup.map(function(s){ return s && s.id === id ? null : s; });
+    G.bench  = G.bench.map(function(s){ return s && s.id === id ? null : s; });
+  });
+  // Add acquired player
+  G.players.push(_tradeTarget);
+  if (_tradeTarget.rar === 'gun' || _tradeTarget.rar === 'superstar') recordHof(_tradeTarget, G.teamName, true);
+  // Remove from market
+  G._tradeMarket = G._tradeMarket.filter(function(p){ return p.id !== _tradeTarget.id; });
+  var acquiredName = _tradeTarget.name;
+  _tradeTarget = null; _tradeOfferIds = []; _tradeCoins = 0;
+  save(); updCoins();
+  alert('✅ Trade Accepted!\n' + acquiredName + ' has joined your club.');
+  if (G.players.length > LIST_CAP) setTimeout(function(){ startCullWizard(LIST_CAP); }, 300);
+  renderTradeContent();
 }
 
 function renderHallOfSuperstars(el) {
@@ -8017,16 +8605,23 @@ function injurePlayer(p) {
 
 function checkInjuryChance(p) {
   if (!p || G.injuries[p.id]) return;
-  // Base 0.8% per tackle/contest. Strength & stamina reduce risk.
+  // Cap total game injuries to 2 to prevent excessive injuries
+  var currentGameInj = Object.keys(G.injuries).filter(function(id){
+    var inj = G.injuries[id];
+    return inj && inj.roundsRemaining >= 1;
+  }).length;
+  if (currentGameInj >= 2) return;
+  // Base 0.5% per tackle/contest (reduced from 0.8%). Strength & stamina reduce risk.
   const str = p.stats.strength || 60;
   const sta = p.stats.stamina || 60;
   const riskReduction = ((str + sta) / 2 / 99) * 0.002;
-  const risk = Math.max(0.002, 0.008 - riskReduction);  // ~0.4-0.8% per tackle/contest
+  const risk = Math.max(0.001, 0.005 - riskReduction);  // ~0.3-0.5% per contest
   if (Math.random() < risk) injurePlayer(p);
 }
 
 function getGameInjuries() {
-  // Returns injured players that are in current lineup or bench
+  // Returns injured players that were in lineup/bench when the game ended
+  if (G._gameInjuries) return G._gameInjuries;
   const allMine = G.lineup.concat(G.bench).filter(Boolean);
   return allMine.filter(p => G.injuries[p.id]);
 }
@@ -8620,14 +9215,16 @@ function completeOnboarding() {
   document.documentElement.style.setProperty('--jersey', G.jerseyColor);
   document.documentElement.style.setProperty('--jersey2', G.jerseySecondary);
 
-  // Roll starter players
+  // Roll starter squad — 18 field + 5 bench, all local/fringe tier
   G.players = [];
-  POSLIST.forEach(function(pos) {
-    G.players.push(gPlayer(pos, 'local'));
-    G.players.push(gPlayer(pos, 'local'));
-    G.players.push(gPlayer(pos, 'fringe'));
+  // 18 field players — one per slot position
+  SLOTS.forEach(function(sl) {
+    G.players.push(gPlayer(sl.pos, Math.random() < 0.4 ? 'fringe' : 'local'));
   });
-  G.players.push(gPlayer('Ruck', 'fringe'));
+  // 5 bench — one per position type
+  ['Full Forward','Ruck','Full Back','Centre','Wingman'].forEach(function(pos) {
+    G.players.push(gPlayer(pos, Math.random() < 0.4 ? 'fringe' : 'local'));
+  });
   autoSquad();
   G.coins = START_COINS;
   save();
@@ -8641,19 +9238,7 @@ function completeOnboarding() {
 }
 
 load(); loadPrefs();
-const _isNewPlayer = !G.players.length || window.location.search.includes('onboard');
-if (!_isNewPlayer) {
-  // Existing player — backfill any missing starter data
-  if (!G.players.length) {
-    POSLIST.forEach(pos => {
-      G.players.push(gPlayer(pos,'local'));
-      G.players.push(gPlayer(pos,'local'));
-      G.players.push(gPlayer(pos,'fringe'));
-    });
-    G.players.push(gPlayer('Ruck','fringe'));
-    autoSquad(); save();
-  }
-}
+const _isNewPlayer = !G.players.length && !G.season || window.location.search.includes('onboard');
 // Set theme icon correctly after load
 const _themeBtn = document.getElementById('theme-btn');
 if (_themeBtn) _themeBtn.textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
