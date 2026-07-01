@@ -1859,11 +1859,24 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
                 <rect x="0" y="0" width="400" height="20" fill="rgba(0,0,0,0.07)"/>
                 <rect x="0" y="20" width="400" height="20" fill="rgba(255,255,255,0.02)"/>
               </pattern>
+              <!-- Sunlit turf — lighter warm centre falling to cool dark edge -->
+              <radialGradient id="turf-sun" cx="50%" cy="42%" r="68%">
+                <stop offset="0%"  stop-color="#2b6318"/>
+                <stop offset="45%" stop-color="#1f4f10"/>
+                <stop offset="80%" stop-color="#173d0a"/>
+                <stop offset="100%" stop-color="#102d06"/>
+              </radialGradient>
               <!-- Radial vignette -->
               <radialGradient id="field-vignette" cx="50%" cy="50%" r="55%">
                 <stop offset="0%" stop-color="rgba(255,255,255,0.04)"/>
                 <stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>
               </radialGradient>
+              <!-- Stadium light spill from top -->
+              <linearGradient id="stadium-spill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stop-color="rgba(255,244,214,0.10)"/>
+                <stop offset="30%" stop-color="rgba(255,244,214,0.03)"/>
+                <stop offset="100%" stop-color="rgba(255,244,214,0)"/>
+              </linearGradient>
               <!-- Glow filter for ball -->
               <filter id="ball-glow" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -1896,10 +1909,20 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
               </clipPath>
             </defs>
 
-            <!-- Base grass -->
-            <ellipse cx="200" cy="300" rx="192" ry="288" fill="#16380a"/>
-            <!-- Grass stripes clipped to oval -->
-            <rect x="0" y="0" width="400" height="600" fill="url(#grass-stripes)" clip-path="url(#oval-clip)"/>
+            <!-- Base grass — sunlit gradient -->
+            <ellipse cx="200" cy="300" rx="192" ry="288" fill="url(#turf-sun)"/>
+            <!-- Concentric mowing rings — the signature AFL ground look -->
+            <g clip-path="url(#oval-clip)" opacity="0.5">
+              <ellipse cx="200" cy="300" rx="176" ry="264" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="16"/>
+              <ellipse cx="200" cy="300" rx="144" ry="216" fill="none" stroke="rgba(0,0,0,0.05)"     stroke-width="16"/>
+              <ellipse cx="200" cy="300" rx="112" ry="168" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="16"/>
+              <ellipse cx="200" cy="300" rx="80"  ry="120" fill="none" stroke="rgba(0,0,0,0.05)"     stroke-width="16"/>
+              <ellipse cx="200" cy="300" rx="48"  ry="72"  fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="16"/>
+            </g>
+            <!-- Grass stripes clipped to oval (subtle, over rings) -->
+            <rect x="0" y="0" width="400" height="600" fill="url(#grass-stripes)" clip-path="url(#oval-clip)" opacity="0.6"/>
+            <!-- Stadium light spill from the top -->
+            <rect x="0" y="0" width="400" height="600" fill="url(#stadium-spill)" clip-path="url(#oval-clip)"/>
             <!-- Vignette -->
             <ellipse cx="200" cy="300" rx="192" ry="288" fill="url(#field-vignette)"/>
 
@@ -4832,7 +4855,7 @@ function confirmLineup() {
 }
 
 // ─── GAME SIMULATION ──────────────────────────────────────────────────────
-function initPST(lu, cpu) { PST={}; _resetScorerCount(); [...lu,...G.bench,...cpu,...G.cpuBench].forEach(p=>{if(p&&!PST[p.id])PST[p.id]={k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0};}); }
+function initPST(lu, cpu) { PST={}; _resetScorerCount(); window._milestonesShown = {}; [...lu,...G.bench,...cpu,...G.cpuBench].forEach(p=>{if(p&&!PST[p.id])PST[p.id]={k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0};}); }
 function rec(p, stat) { if(!p)return; if(!PST[p.id])PST[p.id]={k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0};
   if(stat==='k'||stat==='hb') { triggerDisposal(p); mvSetEvent(stat==='k'?'kick':'handball', G.ballIsA, G.ballIdx, -1); }
   if(stat==='m') { triggerReceive(p); mvSetEvent('mark', G.ballIsA, G.ballIdx, -1); }
@@ -4850,7 +4873,10 @@ function rec(p, stat) { if(!p)return; if(!PST[p.id])PST[p.id]={k:0,hb:0,m:0,t:0,
     }
     mvSetEvent('shot', G.ballIsA, G.ballIdx, -1); _trackScorer(p.id);
   }
-  PST[p.id][stat]++; }
+  PST[p.id][stat]++;
+  // Broadcast layer — milestone flashes for goal bags & big disposal counts
+  if (typeof checkBroadcastMilestones === 'function') checkBroadcastMilestones(p);
+}
 
 // Form tracking — called when player does something good/bad
 function updatePlayerForm(p, delta) {
@@ -5225,6 +5251,36 @@ function showGoalCelebration(scorer, isYours) {
   }
   // UI juice: flash field, show event tag
   flashGoal(isYours);
+
+  // ── BROADCAST WIPE — full-width stripe sweeps across the field ──────────
+  var fw = document.querySelector('.field-wrap');
+  if (fw) {
+    var wipe = document.createElement('div');
+    var wipeCol = isYours ? (G.jerseyColor || '#FAC775') : '#e05050';
+    wipe.style.cssText = 'position:absolute;left:-110%;top:42%;width:100%;height:16%;z-index:15;pointer-events:none;'
+      + 'background:linear-gradient(90deg,transparent,'+wipeCol+'33 20%,'+wipeCol+'55 50%,'+wipeCol+'33 80%,transparent);'
+      + 'display:flex;align-items:center;justify-content:center;'
+      + 'transition:left 0.55s cubic-bezier(0.22,0.9,0.35,1)';
+    wipe.innerHTML = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:34px;font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 0 18px '+wipeCol+',0 2px 4px rgba(0,0,0,0.7)">GOAL</div>';
+    fw.appendChild(wipe);
+    requestAnimationFrame(function(){ wipe.style.left = '0%'; });
+    setTimeout(function(){ wipe.style.left = '110%'; }, 700);
+    setTimeout(function(){ if (wipe.parentNode) wipe.remove(); }, 1400);
+  }
+
+  // ── GOAL SQUARE FLASH — the scoring end's goal square lights up ─────────
+  var svg = document.getElementById('oval-game-svg');
+  if (svg) {
+    var goalY = getGoalMouthY(isYours);
+    var sqY = goalY < 300 ? 12 : 566;
+    var flash = $svg('rect', {x:'186', y:String(sqY-2), width:'28', height:'26', rx:'2',
+      fill: isYours ? 'rgba(250,199,117,0.5)' : 'rgba(224,80,80,0.5)',
+      'pointer-events':'none'});
+    flash.style.animation = 'goalFlash 1s ease both';
+    svg.appendChild(flash);
+    setTimeout(function(){ if (flash.parentNode) flash.remove(); }, 1100);
+  }
+
   const overlay = document.getElementById('goal-overlay');
   if (!overlay) return;
   document.getElementById('goal-banner-text').textContent = isYours ? 'GOAL!' : 'CPU GOAL!';
@@ -5385,6 +5441,17 @@ function doRuck() { mvSetEvent('stoppage', true, 7, -1); // ruck contest at cent
   const sB=rB?((rB.stats.hitout||60)*0.7+rB.stats.strength*0.3):60;
   playSound('bounce');
 
+  // ── CHOREOGRAPHY: both rucks rise for the contest ──────────────────────
+  if (rA) applyLeap(rA);
+  if (rB) applyLeap(rB);
+  // Ball placed at the exact centre for the bounce
+  if (window._ball) {
+    window._ball.x = 200; window._ball.y = 300;
+    window._ball.tx = 200; window._ball.ty = 300;
+    window._ball.t = 1; window._ball.flightType = 'idle';
+    window._ball.trail = [];
+  }
+
   // Trait: Tap Master — 10% chance to auto-direct hitout to your centre before contest
   if (rA && rA.potential === 'tap_master' && Math.random() < 0.10) {
     rec(rA,'ho'); rec(rA,'m'); tireplayer(rA);
@@ -5393,6 +5460,7 @@ function doRuck() { mvSetEvent('stoppage', true, 7, -1); // ruck contest at cent
     const cP = G.lineup[ci];
     addCmt('⚡ TAP MASTER! '+rA.name+' finds '+(cP?cP.name:'the centre')+' straight from the bounce!','');
     pushChain(7,ci,true); G.ballIdx=ci; G.qtrSecs+=5;
+    _ruckTapFlight(ci, true);
     return;
   }
 
@@ -5406,6 +5474,23 @@ function doRuck() { mvSetEvent('stoppage', true, 7, -1); // ruck contest at cent
   const lu = ballGoesA ? G.lineup : G.cpu;
   const ci=pickCentre(lu);
   pushChain(7,ci,ballGoesA); G.ballIdx=ci; G.qtrSecs+=5;
+  _ruckTapFlight(ci, ballGoesA);
+}
+
+// Launch the tap deflection — ball flies up from the bounce and drops at the winning mid
+function _ruckTapFlight(slotIdx, isA) {
+  var ball = window._ball;
+  if (!ball) return;
+  var top = aTop(G.qtr || 1);
+  var to = sCoord(slotIdx, isA, top);
+  ball.sx = 200; ball.sy = 300;
+  ball.tx = to.x; ball.ty = to.y;
+  ball.t = 0;
+  ball.dur = 480;
+  ball.startTime = performance.now();
+  ball.flightType = 'rucktap';   // high arc — reads as toss-up + tap in one motion
+  ball.curve = (Math.random() - 0.5) * 4;
+  ball.trail = [];
 }
 
 
@@ -7203,6 +7288,44 @@ function endQtr() {
   G.qtrScores.push({a:{g:G.sA.g,b:G.sA.b},b:{g:G.sB.g,b:G.sB.b}});
   updateQtrScoresBar();
 
+  // ── QUARTER-BREAK SCORE STRIP — brief broadcast summary ─────────────────
+  if (G.qtr < 4) {
+    var totalA = G.sA.g*6+G.sA.b, totalB = G.sB.g*6+G.sB.b;
+    var qLbl = G.qtr === 1 ? 'QUARTER TIME' : G.qtr === 2 ? 'HALF TIME' : 'THREE QUARTER TIME';
+    var diff = totalA - totalB;
+    var marginTxt = diff > 0 ? 'You lead by '+diff : diff < 0 ? (-diff)+' point'+(diff===-1?'':'s')+' down' : 'Scores level';
+    // Leading goal kicker this game
+    var topG = null, topGN = 0;
+    Object.keys(PST).forEach(function(id){
+      if (PST[id].g > topGN) {
+        var pl = G.lineup.concat(G.bench,G.cpu,G.cpuBench).find(function(p){return p&&p.id===id;});
+        if (pl) { topG = pl; topGN = PST[id].g; }
+      }
+    });
+    var fw2 = document.querySelector('.field-wrap');
+    if (fw2) {
+      var strip = document.createElement('div');
+      strip.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.9);z-index:25;'
+        + 'background:linear-gradient(135deg,rgba(6,12,3,0.96),rgba(14,26,7,0.96));'
+        + 'border:1.5px solid var(--gold);border-radius:12px;padding:14px 26px;text-align:center;'
+        + 'box-shadow:0 12px 40px rgba(0,0,0,0.7);opacity:0;transition:opacity 0.3s,transform 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none';
+      strip.innerHTML =
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:2.5px">'+qLbl+'</div>'
+        + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:30px;font-weight:900;color:#fff;line-height:1.1;margin-top:3px">'
+        + G.sA.g+'.'+G.sA.b+' <span style="font-size:20px;color:var(--text3)">('+totalA+')</span>'
+        + ' <span style="color:var(--text3);font-size:18px;margin:0 4px">—</span> '
+        + G.sB.g+'.'+G.sB.b+' <span style="font-size:20px;color:var(--text3)">('+totalB+')</span></div>'
+        + '<div style="font-size:11px;color:'+(diff>0?'#6abf40':diff<0?'#e05050':'var(--gold)')+';font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-top:3px">'+marginTxt+'</div>'
+        + (topG && topGN >= 2 ? '<div style="font-size:10px;color:var(--text2);margin-top:5px;border-top:1px solid rgba(255,255,255,0.1);padding-top:5px">🏉 '+topG.name+' leads with '+topGN+' goals</div>' : '');
+      fw2.appendChild(strip);
+      requestAnimationFrame(function(){ strip.style.opacity='1'; strip.style.transform='translate(-50%,-50%) scale(1)'; });
+      setTimeout(function(){
+        strip.style.opacity='0'; strip.style.transform='translate(-50%,-50%) scale(0.92)';
+        setTimeout(function(){ if (strip.parentNode) strip.remove(); }, 400);
+      }, 2800);
+    }
+  }
+
   // Apply quarter-break recovery — Q2 break is the long break (40%), others 20%
   var allPlayers = G.players.concat(G.lineup).concat(G.bench).concat(G.cpu).concat(G.cpuBench);
   var playerMap = {};
@@ -7430,10 +7553,7 @@ function mvSetEvent(event, actingA, slotIdx, targetIdx) {
   _mvCtx.focusX = fx; _mvCtx.focusY = fy;
   _mvCtx.age = performance.now();
 
-  // ── EVENT VISUALIZATION HOOKS ───────────────────────────────────────────
-  // 1. Reveal disposal target — pulsing ring at receiver appears WITH ball flight
-  // 4. Contest indicators for tackle/mark/contest events
-  // (Actor pulse ring fires without a name label — keeps the field clean)
+  // ── EVENT VISUALIZATION + CHOREOGRAPHY HOOKS ────────────────────────────
   if (event === 'kick' || event === 'handball' || event === 'shot') {
     // Subtle highlight ring on the kicker (no label)
     flagActor(slotIdx, actingA, '');
@@ -7444,19 +7564,115 @@ function mvSetEvent(event, actingA, slotIdx, targetIdx) {
   } else if (event === 'mark') {
     flagActor(slotIdx, actingA, '');
     flagContest(fx, fy, 'contest');
+    // Choreography: the marker LEAPS — scale up + lift + shadow drop-away
+    var markTeam = actingA ? G.lineup : G.cpu;
+    var marker = markTeam ? markTeam[slotIdx] : null;
+    if (marker) applyLeap(marker);
   } else if (event === 'tackle' || event === 'contest') {
     flagContest(fx, fy, event === 'tackle' ? 'tackle' : 'contest');
     flagActor(slotIdx, actingA, '');
+    // Choreography: tackler lunges toward the contest, snaps back to slot
+    var tacklerTeam = actingA ? G.lineup : G.cpu;
+    var tackler = tacklerTeam ? tacklerTeam[slotIdx] : null;
+    if (tackler) applyLunge(tackler, fx, fy);
+    // Ball physics: contested ball spills loose with 1-2 unpredictable bounces
+    if (window._ball && Math.random() < 0.6) {
+      window._ball.bounces = 1 + (Math.random() < 0.35 ? 1 : 0);
+    }
   }
 
   // Launch ball animation for disposal events
   if (event === 'kick' || event === 'handball' || event === 'shot') {
     mvLaunchBall(event, actingA, slotIdx, targetIdx);
   }
+  // ── SHOT TENSION BEAT — brief dim at 1x speed only, everything holds its breath ──
+  if (event === 'shot' && G.speed === 1) {
+    var dim = document.getElementById('shot-tension-dim');
+    if (!dim) {
+      dim = document.createElement('div');
+      dim.id = 'shot-tension-dim';
+      dim.style.cssText = 'position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.35) 100%);pointer-events:none;z-index:5;opacity:0;transition:opacity 0.25s';
+      var fw = document.querySelector('.field-wrap');
+      if (fw) fw.appendChild(dim);
+    }
+    dim.style.opacity = '1';
+    setTimeout(function(){ if (dim) dim.style.opacity = '0'; }, 900);
+  }
   // Trigger impact effects for contact events
   if (event === 'mark')    mvImpact('mark',    fx, fy);
   if (event === 'tackle')  mvImpact('tackle',  fx, fy);
   if (event === 'contest') mvImpact('tackle',  fx, fy);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BROADCAST LAYER — milestone flashes (lower-third), fired sparingly
+// ══════════════════════════════════════════════════════════════════════════
+// Tracks which player+milestone combos have already flashed this match.
+window._milestonesShown = {};
+
+function broadcastFlash(icon, title, sub, color) {
+  // One at a time — replace any existing flash
+  var existing = document.getElementById('broadcast-flash');
+  if (existing) existing.remove();
+  var fw = document.querySelector('.field-wrap');
+  if (!fw) return;
+  var el = document.createElement('div');
+  el.id = 'broadcast-flash';
+  el.style.cssText = 'position:absolute;left:50%;bottom:12px;transform:translateX(-50%) translateY(30px);z-index:20;'
+    + 'background:linear-gradient(90deg,rgba(8,14,4,0.95),rgba(16,30,8,0.95));'
+    + 'border-left:3px solid '+(color||'var(--gold)')+';border-radius:6px;'
+    + 'padding:6px 14px 6px 10px;display:flex;align-items:center;gap:9px;'
+    + 'box-shadow:0 4px 18px rgba(0,0,0,0.55);opacity:0;'
+    + 'transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;pointer-events:none;white-space:nowrap';
+  el.innerHTML = '<div style="font-size:17px;line-height:1">'+icon+'</div>'
+    + '<div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:0.3px">'+title+'</div>'
+    + '<div style="font-size:9px;color:'+(color||'var(--gold)')+';font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:1px">'+sub+'</div></div>';
+  fw.appendChild(el);
+  requestAnimationFrame(function(){
+    el.style.transform = 'translateX(-50%) translateY(0)';
+    el.style.opacity = '1';
+  });
+  setTimeout(function(){
+    el.style.transform = 'translateX(-50%) translateY(30px)';
+    el.style.opacity = '0';
+    setTimeout(function(){ if (el.parentNode) el.remove(); }, 400);
+  }, 2600);
+}
+
+// Check a player's live stats for milestone thresholds — called after each rec()
+function checkBroadcastMilestones(p) {
+  if (!p || !PST[p.id]) return;
+  var s = PST[p.id];
+  var key;
+  // Goal milestones: 3, 5 goals — a "bag" in progress
+  if (s.g === 3) {
+    key = p.id + ':g3';
+    if (!window._milestonesShown[key]) {
+      window._milestonesShown[key] = true;
+      broadcastFlash('🔥', p.name + ' — 3 GOALS', 'He\'s heating up', '#ff8c4a');
+    }
+  } else if (s.g === 5) {
+    key = p.id + ':g5';
+    if (!window._milestonesShown[key]) {
+      window._milestonesShown[key] = true;
+      broadcastFlash('💥', p.name + ' — 5 GOAL BAG', 'Best on ground stuff', 'var(--gold)');
+    }
+  }
+  // Disposal milestones: 20, 30
+  var dis = s.k + s.hb;
+  if (dis === 20) {
+    key = p.id + ':d20';
+    if (!window._milestonesShown[key]) {
+      window._milestonesShown[key] = true;
+      broadcastFlash('⚙️', p.name + ' — 20 DISPOSALS', 'Everywhere today', '#5aabff');
+    }
+  } else if (dis === 30) {
+    key = p.id + ':d30';
+    if (!window._milestonesShown[key]) {
+      window._milestonesShown[key] = true;
+      broadcastFlash('🌟', p.name + ' — 30 DISPOSALS', 'Career-best territory', '#b48cff');
+    }
+  }
 }
 
 // ── STAT / FATIGUE HELPERS ────────────────────────────────────────────────────
@@ -8340,6 +8556,9 @@ function renderField() {
     const inner = $svg('g');
     const isSuperstar = player && player.rar === 'superstar';
 
+    // Ground contact shadow — sells the "standing on grass" feel
+    inner.appendChild($svg('ellipse', {cx:0, cy:11.5, rx:7, ry:2.2, fill:'rgba(0,0,0,0.35)', class:'tok-shadow'}));
+
     // Body — ellipse jersey
     var bodyRx = 7.5, bodyRy = 9.5;
     inner.appendChild($svg('ellipse', {cx:0, cy:1, rx:bodyRx, ry:bodyRy, fill:fill, stroke: stroke, 'stroke-width':1.2, class:'tok-body'}));
@@ -8352,6 +8571,10 @@ function renderField() {
     } else if (isYours && G.jerseyStyle === 'yoke') {
       inner.appendChild($svg('path', {d:`M-${bodyRx},-3 L${bodyRx},-3 L${bodyRx-1},-${bodyRy-1} L-${bodyRx-1},-${bodyRy-1} Z`, fill:G.jerseySecondary||'#fff', opacity:'0.9'}));
     }
+
+    // Depth shading — light catch top-left, shade bottom-right (fake 3D)
+    inner.appendChild($svg('ellipse', {cx:-2.2, cy:-2.5, rx:4, ry:4.5, fill:'rgba(255,255,255,0.16)', 'pointer-events':'none'}));
+    inner.appendChild($svg('path', {d:`M ${bodyRx-2},2 A ${bodyRx} ${bodyRy} 0 0 1 -1,${bodyRy+0.5} L 2,${bodyRy-1} A ${bodyRx-2} ${bodyRy-2} 0 0 0 ${bodyRx-2.5},1 Z`, fill:'rgba(0,0,0,0.18)', 'pointer-events':'none'}));
 
     // Arms (will be transformed per-frame via class tags)
     inner.appendChild($svg('rect', {x:-bodyRx-1.8, y:-2, width:1.8, height:5, rx:0.8, fill:fill, stroke:'rgba(0,0,0,0.3)', 'stroke-width':'0.4', class:'tok-arm-l'}));
@@ -8461,8 +8684,43 @@ function renderField() {
     if (isPulsing) scale = 1.0 + 0.2 * Math.sin(((now - anim.pulse)/180) * Math.PI);
     else if (isReceive) scale = 1.0 + 0.15 * Math.sin(((now - anim.receive)/200) * Math.PI);
 
+    // ── MARK LEAP — token rises off the deck: scale up + lift + shadow spreads ──
+    let leapLift = 0;
+    const LEAP_DUR = 420;
+    if (anim.leap && (now - anim.leap) < LEAP_DUR) {
+      var lp = (now - anim.leap) / LEAP_DUR;               // 0→1
+      var leapCurve = Math.sin(lp * Math.PI);              // up then down
+      scale = Math.max(scale, 1.0 + leapCurve * 0.32);     // grows to 1.32x at apex
+      leapLift = -leapCurve * 7;                           // rises up to 7px
+      // Shadow spreads + fades while airborne (looks like ground drop-away)
+      var shEl = cached.inner ? cached.inner.querySelector('.tok-shadow') : null;
+      if (shEl) {
+        shEl.setAttribute('rx', (7 + leapCurve * 4).toFixed(1));
+        shEl.setAttribute('opacity', (0.35 - leapCurve * 0.22).toFixed(2));
+        shEl.setAttribute('cy', (11.5 - leapLift).toFixed(1)); // shadow stays on ground
+      }
+    } else if (cached._leapDone !== anim.leap && anim.leap) {
+      // Restore shadow after leap ends
+      var shEl2 = cached.inner ? cached.inner.querySelector('.tok-shadow') : null;
+      if (shEl2) { shEl2.setAttribute('rx','7'); shEl2.setAttribute('opacity','0.35'); shEl2.setAttribute('cy','11.5'); }
+      cached._leapDone = anim.leap;
+    }
+
+    // ── TACKLE LUNGE — anchored nudge toward contest point, snaps back ──────
+    let lungeDx = 0, lungeDy = 0;
+    const LUNGE_DUR = 300;
+    if (anim.lunge && (now - anim.lunge) < LUNGE_DUR && anim.lungeX !== undefined) {
+      var lgP = (now - anim.lunge) / LUNGE_DUR;
+      var lungeCurve = Math.sin(lgP * Math.PI);            // out then back — always returns to slot
+      var ldx = anim.lungeX - x, ldy = anim.lungeY - y;
+      var llen = Math.sqrt(ldx*ldx + ldy*ldy) || 1;
+      var lungeReach = Math.min(8, llen * 0.4);            // up to 8px, never overshoots
+      lungeDx = (ldx / llen) * lungeReach * lungeCurve;
+      lungeDy = (ldy / llen) * lungeReach * lungeCurve;
+    }
+
     // Apply transform on wrapper (translate to position + scale only — no rotation)
-    wrapper.setAttribute('transform', 'translate('+x.toFixed(2)+','+y.toFixed(2)+') scale('+scale.toFixed(3)+')');
+    wrapper.setAttribute('transform', 'translate('+(x + lungeDx).toFixed(2)+','+(y + lungeDy + leapLift).toFixed(2)+') scale('+scale.toFixed(3)+')');
 
     // Body always upright now — no rotation since players are static
     cached.bodyG.setAttribute('transform', 'rotate(0)');
@@ -8530,6 +8788,22 @@ function applyTackle(player) {
   if (!window._tokAnim) window._tokAnim = {};
   if (!window._tokAnim[player.id]) window._tokAnim[player.id] = {};
   window._tokAnim[player.id].tackle = performance.now();
+}
+// Mark leap — token rises (scale + shadow spread) like taking a grab
+function applyLeap(player) {
+  if (!player) return;
+  if (!window._tokAnim) window._tokAnim = {};
+  if (!window._tokAnim[player.id]) window._tokAnim[player.id] = {};
+  window._tokAnim[player.id].leap = performance.now();
+}
+// Tackle lunge — token nudges toward a point then snaps back to its slot (anchored)
+function applyLunge(player, towardX, towardY) {
+  if (!player) return;
+  if (!window._tokAnim) window._tokAnim = {};
+  if (!window._tokAnim[player.id]) window._tokAnim[player.id] = {};
+  window._tokAnim[player.id].lunge = performance.now();
+  window._tokAnim[player.id].lungeX = towardX;
+  window._tokAnim[player.id].lungeY = towardY;
 }
 
 // RAF loop — drives both animation states and movement each frame
@@ -8627,6 +8901,8 @@ function renderBall() {
              : ball.flightType === 'kick'     ? -35
              : ball.flightType === 'shot'     ? -22
              : ball.flightType === 'handball' ? -6
+             : ball.flightType === 'bounce'   ? (ball.arcHOverride || -12)
+             : ball.flightType === 'rucktap'  ? -30
              : 0;
 
     var dx = ball.tx - ball.sx, dy = ball.ty - ball.sy;
@@ -8651,11 +8927,35 @@ function renderBall() {
       ball._lastTrail = now;
     }
 
-    // On arrival — fire impact effect
+    // On arrival — fire impact effect, or start a bounce hop if pending
     if (ball.t >= 1) {
       ball.x = ball.tx; ball.y = ball.ty;
-      ball.impactX = ball.tx; ball.impactY = ball.ty;
-      ball.impactAge = now;
+      if (ball.bounces && ball.bounces > 0) {
+        // The footy bounces unpredictably — diminishing random hops
+        ball.bounces--;
+        var hopDist = 6 + Math.random() * 14 * (ball.bounces + 1) * 0.5;
+        var hopAng = ball.bounceAng !== undefined
+          ? ball.bounceAng + (Math.random() - 0.5) * 1.6   // roughly continue direction with wobble
+          : Math.random() * Math.PI * 2;                   // first bounce: any direction
+        ball.bounceAng = hopAng;
+        var nx = ball.x + Math.cos(hopAng) * hopDist;
+        var ny = ball.y + Math.sin(hopAng) * hopDist;
+        // Keep on the field
+        nx = Math.max(20, Math.min(380, nx));
+        ny = Math.max(20, Math.min(580, ny));
+        ball.sx = ball.x; ball.sy = ball.y;
+        ball.tx = nx; ball.ty = ny;
+        ball.t = 0;
+        ball.dur = 160 + Math.random() * 120;
+        ball.startTime = now;
+        ball.flightType = 'bounce';
+        ball.arcHOverride = -(4 + (ball.bounces + 1) * 4);  // each hop lower
+        ball.curve = 0;
+      } else {
+        ball.impactX = ball.tx; ball.impactY = ball.ty;
+        ball.impactAge = now;
+        ball.bounceAng = undefined;
+      }
     }
   } else {
     // Ball arrived — lerp slowly to ball carrier's current visual position
