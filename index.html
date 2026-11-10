@@ -4555,7 +4555,6 @@ function checkSeasonAchievements(promoResult, goalMet, oldDivision) {
   }
   if (promoResult === 'promoted' && oldDivision === 4) checkAchievement('promoted');
   if (G.division === 1 || G.division === 0) checkAchievement('national_class');
-  if (promoResult === 'worldsEligible') checkAchievement('worlds_invite');
   if ((G.seasonHistory || []).length >= 10) checkAchievement('faithful');
   var homeGames = (s.fixtures || []).filter(function(f){ return f.played && f.home; });
   if (homeGames.length >= 3 && homeGames.every(function(f){ return (f.scoreA || 0) >= (f.scoreB || 0); })) checkAchievement('fortress');
@@ -4614,11 +4613,13 @@ function showWorldsOffer() {
     if (sub) sub.textContent = 'You\'ve conquered the National League. The world\'s elite clubs are calling — do you accept the challenge?';
     if (acc) acc.textContent = '🌍 Accept the Challenge';
     if (dec) dec.textContent = 'Stay in the National League →';
+    // unlocked here, as the invitation opens — never before, so it can't spoil the surprise
+    setTimeout(function() { checkAchievement('worlds_invite', true); }, 900);
   }
+  // Just the names: how strong they are is for the coach to find out
   var list = document.getElementById('worlds-teams-list');
   if (list) list.innerHTML = WORLDS_TEAMS.slice(0, 17).map(function(t){
-    var c = t.ovr >= 96 ? '#ff6b9d' : t.ovr >= 95 ? '#e05050' : 'var(--gold)';
-    return '<div class="wt-row"><span>' + t.name + '</span><b style="color:' + c + '">' + t.ovr + '</b></div>';
+    return '<div class="wt-row"><span>' + t.name + '</span></div>';
   }).join('');
 }
 function decideWorlds(accept) {
