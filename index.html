@@ -503,6 +503,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .flip-ovr.local{color:var(--local-fg)}.flip-ovr.fringe{color:var(--fringe-fg)}.flip-ovr.reliable{color:var(--reliable-fg)}.flip-ovr.gun{color:var(--gun-fg)}.flip-ovr.superstar{color:var(--gold)}
 .flip-rarity{font-size:clamp(7px,2vw,9px);font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;line-height:1}
 .flip-divider{width:60%;height:1px;background:rgba(255,255,255,0.12);margin:1px 0}
+.flip-front>*{flex-shrink:0}
 .flip-name{font-size:clamp(9px,2.5vw,11px);font-weight:700;line-height:1.2;color:var(--text);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .flip-pos{font-size:clamp(7px,2vw,9px);color:var(--text2);line-height:1.2;text-align:center;padding:0 4px}
 .flip-stars{font-size:clamp(8px,2.2vw,10px);letter-spacing:1px;margin-top:1px;line-height:1}
@@ -856,6 +857,15 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
 .setting-toggle{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;padding:5px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;flex-shrink:0;min-width:48px;transition:all 0.15s}
 .setting-toggle.on{background:rgba(107,191,64,0.15);border-color:#6abf40;color:#6abf40}
 .setting-speed-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;padding:5px 10px;border-radius:6px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.15s}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation-duration:0.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:0.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+body.reduce-motion .confetti-piece,body.reduce-motion .wx-haze{display:none}
+.setting-row.stack{flex-wrap:wrap}
+.setting-row.stack .setting-info{flex-basis:100%}
+.setting-seg{display:flex;gap:6px;width:100%}
+.setting-seg .setting-speed-btn{flex:1;padding:7px 4px}
+.setting-btn2{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;flex-shrink:0;text-transform:uppercase;letter-spacing:0.4px}
+#restore-confirm{background:var(--bg3);border:1px solid var(--gold);border-radius:10px;padding:12px;margin:6px 0 4px;font-size:12px;color:var(--text2);line-height:1.5}
+#backup-msg{font-size:12px;line-height:1.4;padding:4px 0}
 .setting-speed-btn.active{background:rgba(250,199,117,0.15);border-color:var(--gold);color:var(--gold)}
 
 /* ── STAT GRID ── */
@@ -1507,6 +1517,14 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
         <button id="setting-sound-btn" class="setting-toggle" onclick="toggleSoundSetting();updateSettingsUI()">On</button>
       </div>
 
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Pause at Quarter Breaks</div>
+          <div class="setting-desc">The 30-second lineup clock starts paused before every quarter — take your time</div>
+        </div>
+        <button id="setting-autopause-btn" class="setting-toggle" onclick="toggleAutoPause();updateSettingsUI()">Off</button>
+      </div>
+
       <!-- DISPLAY -->
       <div class="settings-group-label" style="margin-top:16px">Display</div>
 
@@ -1525,6 +1543,70 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
         </div>
         <button id="setting-disposals-btn" class="setting-toggle" onclick="toggleDisposalsSetting();updateSettingsUI()">On</button>
       </div>
+
+      <div class="setting-row stack">
+        <div class="setting-info">
+          <div class="setting-label">Disposal Traces</div>
+          <div class="setting-desc">The lines showing where the ball has gone — the last four kicks and handballs, only the latest, or none</div>
+        </div>
+        <div class="setting-seg">
+          <button class="setting-speed-btn" id="trset-full" onclick="setTraces('full')">Last 4</button>
+          <button class="setting-speed-btn" id="trset-latest" onclick="setTraces('latest')">Latest Only</button>
+          <button class="setting-speed-btn" id="trset-off" onclick="setTraces('off')">Off</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Reduce Motion</div>
+          <div class="setting-desc">No confetti, flashes or screen shake; cards and menus snap instead of animating</div>
+        </div>
+        <button id="setting-motion-btn" class="setting-toggle" onclick="toggleReduceMotion();updateSettingsUI()">Off</button>
+      </div>
+
+      <!-- PACKS -->
+      <div class="settings-group-label" style="margin-top:16px">Packs</div>
+
+      <div class="setting-row stack">
+        <div class="setting-info">
+          <div class="setting-label">Pack Reveal</div>
+          <div class="setting-desc">Tear &amp; Deal: rip the foil and deal the cards one at a time. Classic: all six land face-down and flip from least to most rare.</div>
+        </div>
+        <div class="setting-seg">
+          <button class="setting-speed-btn" id="prset-deal" onclick="setPackReveal('deal')">Tear &amp; Deal</button>
+          <button class="setting-speed-btn" id="prset-classic" onclick="setPackReveal('classic')">Classic</button>
+        </div>
+      </div>
+
+      <!-- SAVE -->
+      <div class="settings-group-label" style="margin-top:16px">Your Save</div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Back Up</div>
+          <div class="setting-desc">Download your club as a file — keep it safe, or move it to another phone or computer</div>
+        </div>
+        <button class="setting-btn2" onclick="backupSave()">Back Up</button>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Restore</div>
+          <div class="setting-desc">Load a backup file. It replaces the club on this device.</div>
+        </div>
+        <button class="setting-btn2" onclick="restorePick()">Restore</button>
+        <input type="file" id="restore-file" accept=".json,application/json" style="display:none" onchange="restoreFile(event)">
+      </div>
+      <div id="restore-confirm" style="display:none">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--gold);margin-bottom:4px">Replace your club with this one?</div>
+        <div id="restore-what"></div>
+        <div style="margin-top:6px;color:var(--text3)">Your current club on this device will be lost — back it up first if you want to keep it.</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn primary" style="flex:1" onclick="restoreConfirm()">Restore</button>
+          <button class="btn" style="flex:1" onclick="restoreCancel()">Cancel</button>
+        </div>
+      </div>
+      <div id="backup-msg" style="display:none"></div>
 
       <!-- DANGER ZONE -->
       <div class="settings-group-label" style="margin-top:16px;color:#e05050">Danger Zone</div>
@@ -2335,7 +2417,7 @@ body.light #goal-overlay .goal-flash{background:radial-gradient(ellipse at cente
 <!-- NATIONAL DRAFT -->
 <div id="screen-draft" class="screen">
   <div class="topbar">
-    <div class="topbar-title">🎓 National Draft</div>
+    <div class="topbar-title">🎓 <span id="draft-title">Draft</span></div>
     <div class="topbar-actions"><div class="coins-display">🪙 <span id="coins-draft">0</span></div></div>
   </div>
   <div class="trade-wrap"><div id="draft-content"></div></div>
@@ -3404,6 +3486,8 @@ function genPhysique(pos, forcedArch) {
   return { height: r.hMin + ~~(Math.random() * (r.hMax - r.hMin + 1)), weight: r.wMin + ~~(Math.random() * (r.wMax - r.wMin + 1)) };
 }
 
+// Potential: a player's star rating sets the overall he can grow to
+const STAR_CEIL = { 0:60, 0.5:65, 1:68, 1.5:72, 2:78, 2.5:82, 3:86, 3.5:89, 4:92, 4.5:95, 5:97 };
 function gPlayer(pos, rar, forcedArch) {
   if (!rar) rar = rollRarity('bronze');
   const age = 18 + ~~(Math.random() * 5);
@@ -3423,7 +3507,6 @@ function gPlayer(pos, rar, forcedArch) {
   }
   const stats = gStats(pos, draftRar, forcedArch);
 
-  const STAR_CEIL = { 0:60, 0.5:65, 1:68, 1.5:72, 2:78, 2.5:82, 3:86, 3.5:89, 4:92, 4.5:95, 5:97 };
   const peakCeil = STAR_CEIL[stars] || 60;
 
   // Leadership — hidden stat, affects captain/VC value. Superstars skew high.
@@ -3570,6 +3653,7 @@ function startSimLoop() {
   var id = _simLoopId;
   var h = setInterval(function() { if (id !== _simLoopId) { clearInterval(h); return; } simTick(); }, TICK_MS / (G.speed || 1));
   G.simInt = h;
+  try { sfxCrowdStart(); } catch (e) {}
 }
 // Holds: brief pauses while a shot or loose ball plays out
 function holdSim() { G._simHold = true; stopSimLoop(); }
@@ -3624,6 +3708,7 @@ function rarColor(r) {
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // ── CONFETTI BURST — used for superstar reveals + championship celebrations ──
 function spawnConfetti() {
+  if (PREFS.reduceMotion) return;
   var container = document.createElement('div');
   container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden';
   document.body.appendChild(container);
@@ -3707,6 +3792,7 @@ let curTab = 'you';
 
 // ─── SAVE / LOAD ──────────────────────────────────────────────────────────
 function save() {
+  if (G._restoring) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       players: G.players, lineup: G.lineup, bench: G.bench, coins: G.coins,
@@ -3715,7 +3801,7 @@ function save() {
       jerseyColor: G.jerseyColor, jerseySecondary: G.jerseySecondary, jerseyStyle: G.jerseyStyle,
       seasonHistory: G.seasonHistory, division: G.division,
       careerRecords: G.careerRecords, seasonStats: G.seasonStats,
-      hofPlayers: G.hofPlayers, hallOfSuperstars: G.hallOfSuperstars, freeAgents: G.freeAgents,
+      hofPlayers: G.hofPlayers, hallOfSuperstars: G.hallOfSuperstars, freeAgents: G.freeAgents, freeAgentsDiv: G.freeAgentsDiv,
       injuries: G.injuries,
       captainId: G.captainId, vcId: G.vcId,
       season: G.season,
@@ -3767,6 +3853,7 @@ function load() {
       if (d.hofPlayers) G.hofPlayers = d.hofPlayers;
       if (d.hallOfSuperstars) G.hallOfSuperstars = d.hallOfSuperstars;
       if (d.freeAgents) G.freeAgents = d.freeAgents;
+      G.freeAgentsDiv = d.freeAgentsDiv;
       if (d.injuries) G.injuries = d.injuries;
       if (d.captainId) G.captainId = d.captainId;
       if (d.vcId) G.vcId = d.vcId;
@@ -4243,7 +4330,7 @@ var ACHIEVEMENTS = [
   { id:'tactician',       icon:'♟️', name:'Tactician',          desc:'Bring 3+ players off the bench at one quarter break', cat:'Manager' },
   { id:'scout_eye',       icon:'🔍', name:'Scout Eye',          desc:'Pick all 18 positions yourself before a game',   cat:'Manager' },
   { id:'deal_maker',      icon:'🤝', name:'Deal Maker',         desc:'Complete a trade in the trade period',           cat:'Manager' },
-  { id:'top_pick',        icon:'🎓', name:'Top Pick',           desc:'Use a top-3 pick in the National Draft',         cat:'Manager' },
+  { id:'top_pick',        icon:'🎓', name:'Top Pick',           desc:'Use a top-3 pick in the draft',         cat:'Manager' },
   { id:'faithful',        icon:'🏟️', name:'Faithful',           desc:'Play 10 seasons',                                cat:'Manager' },
   // Collection
   { id:'legend_pull',     icon:'⭐', name:'Legend Pull',        desc:'Pull your first Superstar from a pack',          cat:'Collection' },
@@ -4318,6 +4405,7 @@ function checkAchievement(id, toast) {
 function showAchievementToast(ach) {
   if (!document.body || !document.body.appendChild) return;
   var old = document.getElementById('ach-toast'); if (old && old.remove) old.remove();
+  try { playSound('achievement'); } catch (e) {}
   var t = document.createElement('div');
   t.id = 'ach-toast';
   t.className = 'ach-toast';
@@ -4665,6 +4753,7 @@ function buyPack(type, cost) {
     return;
   }
   G.coins -= cost;
+  try { playSound('coin'); } catch (e) {}
   trackPackSpend(cost);
   checkAchievement('first_pack', true);
   const newPs = [];
@@ -4718,10 +4807,9 @@ function PACK_CARD_FACE(p, isTopCard) {
           <div class="flip-rarity" style="color:${starCol}">${p.rar}</div>
           <div class="flip-divider"></div>
           <div class="flip-name">${p.name}</div>
-          <div class="flip-pos">${playerPosLabel(p)}${p.secondaryPos?'<span style="color:#b48cff;font-weight:700"> / '+posLongLabel(p.secondaryPos)+'</span>':''}</div>
+          <div class="flip-pos">${playerPosLabel(p)}${p.secondaryPos?'<span style="color:#b48cff;font-weight:700" title="Dual position"> ⇆ '+posLongLabel(p.secondaryPos)+'</span>':''}</div>
           <div class="flip-stars" style="color:${starCol}">${starsStr(stars)}</div>
           <div style="font-size:8px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4">Age ${p.age||'?'} · ${p.height||'—'}cm · ${p.weight||'—'}kg</div>
-          ${p.secondaryPos?'<div style="margin-top:4px;padding:2px 6px;background:rgba(180,140,255,0.15);border:1px solid rgba(180,140,255,0.5);border-radius:4px;font-size:7px;font-weight:800;color:#b48cff;text-transform:uppercase;letter-spacing:0.5px">⇆ Dual Position</div>':''}
           <div style="margin-top:6px;padding:4px 6px;background:rgba(0,0,0,0.25);border-radius:5px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.3px;line-height:1.5;text-align:center">${(function(){
             var CORE = ['kick','handball','mark','tackle','speed','strength','agility'];
             var SPEC = ['setShot','pressure','leading','intercept','rebound','spoiling','contested','uncontested','hitout','hitoutAcc'];
@@ -4734,7 +4822,7 @@ function PACK_CARD_FACE(p, isTopCard) {
             var topSpec = null, topSpecVal = 0;
             SPEC.forEach(function(k){ if(s[k] && s[k] > topSpecVal){ topSpecVal = s[k]; topSpec = k; } });
             var specLabel = topSpec ? ({setShot:'Set Shot',pressure:'Pressure',leading:'Leading',intercept:'Intercept',rebound:'Rebound',spoiling:'Spoiling',contested:'Contested',uncontested:'Uncontested',hitout:'Hitout',hitoutAcc:'Hitout Acc'}[topSpec] || topSpec) : null;
-            return coreLabel + ' <span style="color:#fff;font-size:11px">' + topCoreVal + '</span>' + (specLabel ? ' &nbsp;·&nbsp; ' + specLabel + ' <span style="color:#fff;font-size:11px">' + topSpecVal + '</span>' : '');
+            return coreLabel + ' <span style="color:#fff;font-size:11px">' + topCoreVal + '</span>' + (specLabel ? '<br>' + specLabel + ' <span style="color:#fff;font-size:11px">' + topSpecVal + '</span>' : '');
           })()}</div>
           ${p.potential === true ? '<div style="margin-top:4px;padding:2px 6px;background:rgba(250,199,117,0.15);border:1px solid rgba(250,199,117,0.5);border-radius:4px;font-size:7px;font-weight:800;color:#FAC775;text-transform:uppercase;letter-spacing:0.5px">⚡ Potential</div>' : p.potential && p.traitName ? '<div style="margin-top:4px;padding:2px 6px;background:rgba(250,199,117,0.2);border:1px solid var(--gold);border-radius:4px;font-size:7px;font-weight:800;color:#FAC775;text-transform:uppercase;letter-spacing:0.5px">⚡ '+p.traitName+'</div>' : ''}
         </div>
@@ -4823,6 +4911,7 @@ function openPackAnimation(cards, type) {
     return card;
   });
   _po = { cards: sorted, els: els, type: type, i: -1, stage: 'pack', busy: false };
+  if (PREFS.packReveal === 'classic') { classicReveal(); return; }
 
   var url = packImgURL(type);
   stage.style.display = '';
@@ -4837,6 +4926,38 @@ function openPackAnimation(cards, type) {
     + '<div class="po-hint">Tap to tear open</div>';
   stage.onclick = packStageTap;
   if (skip) skip.style.display = '';
+}
+
+// Classic: all six land face-down in a grid, then flip one after another, worst to best.
+function classicReveal() {
+  var po = _po; if (!po) return;
+  po.stage = 'classic';
+  var stage = document.getElementById('pack-stage');
+  stage.innerHTML = ''; stage.style.display = 'none'; stage.onclick = null;
+  var grid = document.getElementById('pack-flip-grid'); grid.style.display = '';
+  var skip = document.getElementById('pack-skip-btn'); if (skip) skip.style.display = '';
+  po.els.forEach(function(el, k) {
+    el.classList.remove('flipped'); el.classList.add('in-grid');
+    if (el.style.setProperty) el.style.setProperty('--k', k);
+    el.onclick = function() { if (el.classList.contains('flipped')) showProfile(el._p); };
+    grid.appendChild(el);
+  });
+  try { playSound('tear'); } catch (e) {}
+  setTimeout(function() { classicFlipNext(po); }, 650 + po.els.length * 70);
+}
+function classicFlipNext(po) {
+  if (_po !== po || po.stage !== 'classic') return;
+  po.i++;
+  if (po.i >= po.els.length) { showPackGrid(); return; }
+  var p = po.cards[po.i], el = po.els[po.i];
+  var rare = p.rar === 'gun' || p.rar === 'superstar';
+  if (rare) { el.classList.add('charge'); if (el.style.setProperty) el.style.setProperty('--rc', RAR_GLOW[p.rar]); }
+  setTimeout(function() {
+    if (_po !== po || po.stage !== 'classic') return;
+    el.classList.remove('charge'); el.classList.add('flipped');
+    if (rare) packRareFX(p.rar); else try { playSound('reveal'); } catch (e) {}
+    setTimeout(function() { classicFlipNext(po); }, rare ? 750 : 430);
+  }, rare ? (p.rar === 'superstar' ? 1100 : 750) : 0);
 }
 
 function packStageTap() {
@@ -4889,8 +5010,9 @@ function nextPackCard() {
 }
 
 function packRareFX(rar) {
-  try { playSound('reveal'); } catch (e) {}
+  try { playSound(rar === 'superstar' ? 'superstar' : 'gun'); } catch (e) {}
   var gold = rar === 'superstar';
+  if (PREFS.reduceMotion) { if (navigator.vibrate) try { navigator.vibrate(gold ? [60, 40, 60] : [30, 30, 30]); } catch (e) {} return; }
   var fl = document.createElement('div');
   fl.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle at center,' + (gold ? 'rgba(250,199,117,0.42)' : 'rgba(176,144,240,0.3)') + ' 0%,transparent 70%);pointer-events:none;z-index:9999;animation:goalFlash ' + (gold ? 0.9 : 0.6) + 's ease both';
   document.body.appendChild(fl);
@@ -4901,7 +5023,8 @@ function packRareFX(rar) {
 
 function packSkip() {
   if (!_po) return;
-  var hadStar = _po.stage !== 'grid' && _po.cards.slice(Math.max(0, _po.i + 1)).some(function(p){ return p.rar === 'superstar'; });
+  var po = _po;
+  var hadStar = po.stage !== 'grid' && po.cards.some(function(p, k) { return p.rar === 'superstar' && !po.els[k].classList.contains('flipped'); });
   showPackGrid();
   if (hadStar) packRareFX('superstar');
 }
@@ -4920,7 +5043,7 @@ function showPackGrid() {
     el.classList.add('in-grid');
     if (el.style.setProperty) el.style.setProperty('--k', k);
     el.onclick = function() { showProfile(el._p); };
-    grid.appendChild(el);
+    if (el.parentNode !== grid) grid.appendChild(el);   // classic: already in place, don't restart its entrance
   });
   document.getElementById('pack-anim-hint').style.display = 'none';
   document.getElementById('pack-anim-actions').style.display = 'flex';
@@ -4977,78 +5100,231 @@ function buyAnotherPack(type, cost) {
 }
 
 // ─── SOUND SYSTEM ────────────────────────────────────────────────────────
-let _audioCtx = null;
+// Everything is synthesised live (no audio files): a crowd that breathes with the
+// play, real umpire whistles, the siren, leather on boot, and pack and trophy cues.
+// All sounds go through one bus: a compressor (so a goal roar never clips) and a volume.
+let _audioCtx = null, _sfxBus = null, _noiseBufs = {};
 function getAudioCtx() {
-  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!_audioCtx) {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var bus = ctx.createGain(); bus.gain.value = 0.9;
+    try {
+      var comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.25;
+      bus.connect(comp); comp.connect(ctx.destination);
+    } catch (e) { bus.connect(ctx.destination); }
+    _audioCtx = ctx; _sfxBus = bus;
+  }
   return _audioCtx;
 }
+// White and pink noise, made once
+function _noise(kind) {
+  var ctx = getAudioCtx();
+  if (_noiseBufs[kind]) return _noiseBufs[kind];
+  var len = ctx.sampleRate * 3, buf = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (var ch = 0; ch < 2; ch++) {
+    var d = buf.getChannelData(ch), b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (var i = 0; i < len; i++) {
+      var w = Math.random() * 2 - 1;
+      if (kind === 'white') { d[i] = w; continue; }
+      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+      b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+    }
+  }
+  return (_noiseBufs[kind] = buf);
+}
+function _env(g, t, a, peak, hold, rel) {
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + a);
+  g.gain.setValueAtTime(peak, t + a + hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + a + hold + rel);
+}
+function _out(node, pan) {
+  var ctx = getAudioCtx();
+  if (pan && ctx.createStereoPanner) { var p = ctx.createStereoPanner(); p.pan.value = pan; node.connect(p); p.connect(_sfxBus); }
+  else node.connect(_sfxBus);
+}
+// A burst of filtered noise: the building block for crowds, rips, whooshes
+function _noiseHit(t, o) {
+  var ctx = getAudioCtx(), src = ctx.createBufferSource();
+  src.buffer = _noise(o.kind || 'pink'); src.loop = true;
+  src.playbackRate.value = o.rate || 1;
+  var f = ctx.createBiquadFilter(); f.type = o.type || 'bandpass'; f.frequency.value = o.freq || 1000; f.Q.value = o.q || 0.7;
+  if (o.sweep) f.frequency.exponentialRampToValueAtTime(o.sweep, t + (o.a || 0.01) + (o.hold || 0) + (o.rel || 0.2));
+  var g = ctx.createGain(); _env(g, t, o.a || 0.01, o.peak || 0.3, o.hold || 0, o.rel || 0.2);
+  src.connect(f); f.connect(g); _out(g, o.pan);
+  src.start(t, Math.random() * 2); src.stop(t + (o.a || 0.01) + (o.hold || 0) + (o.rel || 0.2) + 0.05);
+  return f;
+}
+function _tone(t, o) {
+  var ctx = getAudioCtx(), osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = o.wave || 'sine'; osc.frequency.setValueAtTime(o.freq, t);
+  if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + (o.glide || (o.a || 0.01) + (o.hold || 0) + (o.rel || 0.2)));
+  if (o.detune) osc.detune.value = o.detune;
+  _env(g, t, o.a || 0.005, o.peak || 0.2, o.hold || 0, o.rel || 0.2);
+  var last = g;
+  if (o.lp) { var f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; g.connect(f); last = f; }
+  osc.connect(g); _out(last, o.pan);
+  osc.start(t); osc.stop(t + (o.a || 0.005) + (o.hold || 0) + (o.rel || 0.2) + 0.05);
+  return osc;
+}
+// Umpire's pea whistle: a bright tone with the pea's rattle (fast tremolo) and a breath of air
+function _whistle(t, len, pitch) {
+  var ctx = getAudioCtx(), osc = ctx.createOscillator(), g = ctx.createGain(), trem = ctx.createOscillator(), tg = ctx.createGain();
+  osc.type = 'sine'; osc.frequency.setValueAtTime(pitch * 0.96, t); osc.frequency.linearRampToValueAtTime(pitch, t + 0.04);
+  trem.frequency.value = 34; tg.gain.value = 0.45; trem.connect(tg);
+  var am = ctx.createGain(); am.gain.value = 0.55; tg.connect(am.gain);
+  _env(g, t, 0.015, 0.16, len, 0.06);
+  osc.connect(am); am.connect(g); _out(g);
+  osc.start(t); trem.start(t); osc.stop(t + len + 0.12); trem.stop(t + len + 0.12);
+  _noiseHit(t, { kind: 'white', type: 'bandpass', freq: pitch, q: 3, a: 0.01, peak: 0.05, hold: len, rel: 0.05 });
+}
 
-function playSound(type) {
+// ── the crowd: a bed of murmur under live play, rising as the ball nears either goal ──
+var _crowd = null;
+function sfxCrowdStart() {
+  if (!PREFS.soundOn || _crowd) return;
+  try {
+    var ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume();
+    var src = ctx.createBufferSource(); src.buffer = _noise('pink'); src.loop = true;
+    var f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = 0.4;
+    var g = ctx.createGain(); g.gain.value = 0.0001;
+    src.connect(f); f.connect(g); g.connect(_sfxBus); src.start();
+    g.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + 1.2);
+    _crowd = { src: src, g: g, f: f, iv: setInterval(function() {
+      if (!_crowd) return;
+      if ((!G.running && !G._simHold) || document.hidden) { sfxCrowdStop(); return; }
+      var b = window._ball, close = 0;
+      if (b && typeof b.y === 'number') close = Math.max(0, 1 - Math.min(Math.abs(b.y - 25), Math.abs(b.y - 575)) / 260);
+      var lvl = 0.06 + 0.13 * close * close;
+      _crowd.g.gain.setTargetAtTime(lvl, ctx.currentTime, 0.6);
+      _crowd.f.frequency.setTargetAtTime(650 + 500 * close, ctx.currentTime, 0.6);
+    }, 400) };
+  } catch (e) {}
+}
+function sfxCrowdStop() {
+  if (!_crowd) return;
+  try {
+    var c = _crowd, ctx = getAudioCtx(); _crowd = null; clearInterval(c.iv);
+    c.g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
+    setTimeout(function(){ try { c.src.stop(); } catch (e) {} }, 1600);
+  } catch (e) {}
+}
+
+// Percussion for the live play (kicks, marks, tackles, free kicks): only while a match runs, never stacked
+var _sfxLast = 0;
+function sfxStat(stat) {
+  if (!PREFS.soundOn || !G.running) return;
+  var kind = stat === 'k' ? 'kick' : stat === 'm' ? 'mark' : stat === 't' ? 'tackle' : stat === 'ff' ? 'free' : null;
+  if (!kind) return;
+  var t = Date.now(); if (t - _sfxLast < 140 && kind !== 'free') return; _sfxLast = t;
+  playSound(kind);
+}
+
+function playSound(type, opt) {
   if (!PREFS.soundOn) return;
   try {
-    const ctx = getAudioCtx();
+    var ctx = getAudioCtx();
     if (ctx.state === 'suspended') ctx.resume();
-    const now = ctx.currentTime;
-    if (type === 'tear' || type === 'reveal') {
-      if (type === 'tear') {            // a short foil rip: filtered noise
-        const len = ctx.sampleRate * 0.28, nb = ctx.createBuffer(1, len, ctx.sampleRate), nd = nb.getChannelData(0);
-        for (let i = 0; i < len; i++) nd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.6) * (0.5 + 0.5 * Math.random());
-        const src = ctx.createBufferSource(); src.buffer = nb;
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
-        const g = ctx.createGain(); g.gain.value = 0.35;
-        src.connect(hp); hp.connect(g); g.connect(ctx.destination); src.start(now);
-      } else {                          // a soft chime
-        [880, 1320].forEach(function(f, k) {
-          const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f;
-          g.gain.setValueAtTime(0.0001, now + k * 0.05); g.gain.exponentialRampToValueAtTime(0.12, now + k * 0.05 + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, now + k * 0.05 + 0.5);
-          o.connect(g); g.connect(ctx.destination); o.start(now + k * 0.05); o.stop(now + k * 0.05 + 0.55);
-        });
+    var now = ctx.currentTime + 0.01;
+    switch (type) {
+      case 'goal': {
+        var ours = opt === undefined ? G._lastGoalSide !== false : !!opt;
+        if (ours) {
+          // the roar: two wide layers that surge in, then a rolling cheer that dies away
+          _noiseHit(now, { freq: 900, q: 0.5, a: 0.18, peak: 0.42, hold: 0.9, rel: 1.8, pan: -0.35, sweep: 1300 });
+          _noiseHit(now + 0.03, { freq: 1500, q: 0.6, a: 0.22, peak: 0.3, hold: 0.8, rel: 1.6, pan: 0.35, sweep: 1900 });
+          _noiseHit(now, { type: 'lowpass', freq: 260, a: 0.12, peak: 0.25, hold: 0.6, rel: 1.4 });           // stamping feet
+          for (var w = 0; w < 4; w++)                                                                  // "WOOO" swells
+            _noiseHit(now + 0.4 + w * 0.42, { freq: 600 + w * 60, q: 4, a: 0.15, peak: 0.08, hold: 0.1, rel: 0.35, sweep: 1100, pan: (w % 2 ? 0.5 : -0.5) });
+        } else {
+          // away goal: a groan from the home crowd, a small cheer from the visitors far off
+          _noiseHit(now, { freq: 520, q: 1.4, a: 0.12, peak: 0.55, hold: 0.35, rel: 0.9, sweep: 260 });
+          _noiseHit(now + 0.15, { freq: 1700, q: 0.8, a: 0.1, peak: 0.2, hold: 0.4, rel: 0.7, pan: 0.6 });
+        }
+        break;
       }
-      return;
+      case 'behind':   // "oooh" — a falling vowel from the crowd
+        _noiseHit(now, { freq: 760, q: 3.2, a: 0.08, peak: 0.65, hold: 0.25, rel: 0.6, sweep: 420 });
+        _noiseHit(now, { freq: 380, q: 2.4, a: 0.08, peak: 0.4, hold: 0.25, rel: 0.6, sweep: 240 });
+        break;
+      case 'free':     // free kick paid: one sharp blast
+        if ((G.speed || 1) > 2) break;
+        _whistle(now, 0.24, 2950);
+        break;
+      case 'whistle':  // umpire: two short blasts
+        _whistle(now, 0.16, 2900); _whistle(now + 0.26, 0.32, 2900);
+        break;
+      case 'siren': {  // the ground siren: a long horn that swells and drops away
+        var len = opt ? 2.4 : 1.5;
+        [0, 7].forEach(function(dt) {
+          _tone(now, { wave: 'sawtooth', freq: 330, to: 440, glide: 0.35, a: 0.25, peak: 0.08, hold: len, rel: 0.9, lp: 1400, detune: dt });
+          _tone(now + len, { wave: 'sawtooth', freq: 440, to: 300, glide: 0.9, a: 0.01, peak: 0.06, hold: 0, rel: 0.9, lp: 1200, detune: dt });
+        });
+        _tone(now, { wave: 'square', freq: 220, to: 220, a: 0.25, peak: 0.03, hold: len, rel: 0.9, lp: 700 });
+        if (opt === 'win')  _noiseHit(now + 0.5, { freq: 1000, q: 0.5, a: 0.4, peak: 0.34, hold: 1.6, rel: 2.2, sweep: 1500 });
+        if (opt === 'loss') _noiseHit(now + 0.5, { freq: 500, q: 1, a: 0.4, peak: 0.12, hold: 0.6, rel: 1.4, sweep: 300 });
+        break;
+      }
+      case 'bounce':   // a whistle, then leather hitting turf
+        _whistle(now, 0.22, 3000);
+        _tone(now + 0.32, { freq: 140, to: 50, a: 0.003, peak: 0.28, rel: 0.25 });
+        _noiseHit(now + 0.32, { type: 'lowpass', freq: 900, a: 0.002, peak: 0.12, rel: 0.08 });
+        break;
+      case 'kick':     // boot on ball: a hollow thock
+        if ((G.speed || 1) > 2) break;
+        _tone(now, { freq: 210, to: 80, a: 0.002, peak: 0.32, rel: 0.12 });
+        _noiseHit(now, { type: 'bandpass', freq: 1800, q: 1.2, a: 0.001, peak: 0.16, rel: 0.04 });
+        break;
+      case 'mark':     // the ball smacking into hands
+        if ((G.speed || 1) > 2) break;
+        _noiseHit(now, { type: 'bandpass', freq: 1200, q: 0.9, a: 0.001, peak: 0.38, rel: 0.06 });
+        _tone(now, { freq: 160, to: 90, a: 0.002, peak: 0.22, rel: 0.08 });
+        break;
+      case 'tackle':   // a thud and a shout of "BAAALL" from the crowd
+        if ((G.speed || 1) > 2) break;
+        _tone(now, { freq: 90, to: 45, a: 0.004, peak: 0.38, rel: 0.18 });
+        if (Math.random() < 0.5) _noiseHit(now + 0.05, { freq: 520, q: 3, a: 0.06, peak: 0.25, hold: 0.25, rel: 0.25, sweep: 380 });
+        break;
+      case 'tear': {   // foil: crackling grains, then the rip
+        for (var k = 0; k < 26; k++)
+          _noiseHit(now + Math.random() * 0.3, { kind: 'white', type: 'highpass', freq: 2500 + Math.random() * 4000, a: 0.001, peak: 0.05 + Math.random() * 0.06, rel: 0.015 + Math.random() * 0.03 });
+        _noiseHit(now + 0.08, { kind: 'white', type: 'bandpass', freq: 1800, q: 0.8, a: 0.02, peak: 0.22, hold: 0.12, rel: 0.12, sweep: 6000 });
+        break;
+      }
+      case 'reveal':   // card flip: a whoosh and a soft pluck
+        _noiseHit(now, { kind: 'white', type: 'bandpass', freq: 700, q: 1.5, a: 0.04, peak: 0.22, rel: 0.12, sweep: 2600 });
+        _tone(now + 0.08, { wave: 'triangle', freq: 660, a: 0.004, peak: 0.17, rel: 0.25 });
+        break;
+      case 'gun':      // a shimmering arpeggio
+        [523, 659, 784, 1047].forEach(function(f, i) { _tone(now + i * 0.07, { wave: 'triangle', freq: f, a: 0.005, peak: 0.1, rel: 0.45 }); });
+        _noiseHit(now + 0.25, { kind: 'white', type: 'highpass', freq: 7000, a: 0.02, peak: 0.04, hold: 0.2, rel: 0.5 });
+        break;
+      case 'superstar': {  // fanfare: a brassy chord that blooms, a cymbal and the crowd
+        [[392, 0], [523, 0.12], [659, 0.24], [784, 0.36]].forEach(function(n) {
+          _tone(now + n[1], { wave: 'sawtooth', freq: n[0], a: 0.03, peak: 0.07, hold: 0.12, rel: 0.25, lp: 2400 });
+        });
+        [523, 659, 784, 1047].forEach(function(f) { _tone(now + 0.5, { wave: 'sawtooth', freq: f, a: 0.06, peak: 0.06, hold: 0.7, rel: 0.9, lp: 2600, detune: (Math.random() - 0.5) * 12 }); });
+        _noiseHit(now + 0.5, { kind: 'white', type: 'highpass', freq: 6000, a: 0.005, peak: 0.12, hold: 0.1, rel: 1.4 });
+        _noiseHit(now + 0.55, { freq: 1100, q: 0.5, a: 0.3, peak: 0.2, hold: 0.6, rel: 1.4 });
+        break;
+      }
+      case 'coin':     // coins dropped on a counter
+        [0, 0.07, 0.15].forEach(function(dt, i) {
+          var f = 2400 + i * 260;
+          _tone(now + dt, { freq: f, a: 0.001, peak: 0.08, rel: 0.22 });
+          _tone(now + dt, { freq: f * 2.76, a: 0.001, peak: 0.03, rel: 0.12 });
+        });
+        break;
+      case 'achievement':  // a bright three-note "ta-da"
+        [[784, 0], [988, 0.1], [1319, 0.2]].forEach(function(n) {
+          _tone(now + n[1], { wave: 'triangle', freq: n[0], a: 0.005, peak: 0.12, hold: n[1] === 0.2 ? 0.25 : 0.05, rel: 0.4 });
+          _tone(now + n[1], { wave: 'sine', freq: n[0] * 2, a: 0.005, peak: 0.03, rel: 0.3 });
+        });
+        break;
     }
-
-    if (type === 'goal') {
-      // Crowd roar — layered noise burst swelling then fading
-      const bufSize = ctx.sampleRate * 1.8;
-      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < bufSize; i++) data[i] = (Math.random()*2-1) * Math.min(1, i/(ctx.sampleRate*0.15)) * Math.pow(1 - i/bufSize, 0.4);
-      const src = ctx.createBufferSource(); src.buffer = buf;
-      const gain = ctx.createGain(); gain.gain.setValueAtTime(0.55, now); gain.gain.exponentialRampToValueAtTime(0.001, now+1.8);
-      const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 900; filter.Q.value = 0.5;
-      src.connect(filter); filter.connect(gain); gain.connect(ctx.destination); src.start(now);
-      // Siren / air horn hits
-      [0, 0.05, 0.12].forEach(function(t) {
-        const osc = ctx.createOscillator(); const g2 = ctx.createGain();
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(280, now+t); osc.frequency.linearRampToValueAtTime(220, now+t+0.35);
-        g2.gain.setValueAtTime(0.18, now+t); g2.gain.exponentialRampToValueAtTime(0.001, now+t+0.4);
-        osc.connect(g2); g2.connect(ctx.destination); osc.start(now+t); osc.stop(now+t+0.4);
-      });
-
-    } else if (type === 'behind') {
-      // Short single beep
-      const osc = ctx.createOscillator(); const g = ctx.createGain();
-      osc.type = 'sine'; osc.frequency.value = 440;
-      g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.25);
-      osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+0.25);
-
-    } else if (type === 'whistle') {
-      // Quarter-time whistle — rising then falling tone
-      const osc = ctx.createOscillator(); const g = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1400, now); osc.frequency.linearRampToValueAtTime(1600, now+0.12); osc.frequency.linearRampToValueAtTime(1350, now+0.45);
-      g.gain.setValueAtTime(0.22, now); g.gain.setValueAtTime(0.22, now+0.35); g.gain.exponentialRampToValueAtTime(0.001, now+0.5);
-      osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+0.52);
-
-    } else if (type === 'bounce') {
-      // Ruck bounce — low thud
-      const osc = ctx.createOscillator(); const g = ctx.createGain();
-      osc.type = 'sine'; osc.frequency.setValueAtTime(120, now); osc.frequency.exponentialRampToValueAtTime(55, now+0.18);
-      g.gain.setValueAtTime(0.35, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.22);
-      osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+0.22);
-    }
-  } catch(e) {}
+  } catch (e) {}
 }
 
 // ─── GOAL-DIRECTION ARROWS ────────────────────────────────────────────────
@@ -5215,6 +5491,10 @@ function startPreGame() {
     document.getElementById('timer-fill').style.width = (Math.max(0,G.preTime)/30*100) + '%';
     if (G.preTime <= 0) { clearInterval(G.preInt); confirmLineup(); }
   }, 1000);
+  if (PREFS.autoPause) {                      // the clock waits for you; tap play (or Start) when ready
+    togglePreTimer();
+    var _pl = document.getElementById('pg-timer-label'); if (_pl) _pl.textContent = 'Paused';
+  }
 }
 
 function renderPG() {
@@ -5528,6 +5808,7 @@ function overListCap() {
 function newPST() { return {k:0,hb:0,m:0,t:0,g:0,b:0,ho:0,ff:0,fa:0,tog:0,cl:0,i50:0,cp:0,ef:0,cm:0,r50:0}; }
 function initPST(lu, cpu) { PST={}; _resetScorerCount(); resetMatchStory(); window._milestonesShown = {}; [...lu,...G.bench,...cpu,...G.cpuBench].forEach(p=>{if(p&&!PST[p.id])PST[p.id]=newPST();}); }
 function rec(p, stat) { if(!p)return; if(!PST[p.id])PST[p.id]=newPST();
+  if (stat === 'k' || stat === 'm' || stat === 't' || stat === 'ff') { try { sfxStat(stat); } catch (e) {} }
   if (SPR_STAT_ACT[stat]) sprAct(p, SPR_STAT_ACT[stat]);
   if(stat==='k'||stat==='hb') { triggerDisposal(p); mvSetEvent(stat==='k'?'kick':'handball', G.ballIsA, G.ballIdx, -1); }
   if(stat==='m') { triggerReceive(p); mvSetEvent('mark', G.ballIsA, G.ballIdx, -1); }
@@ -5927,6 +6208,7 @@ function checkAutoInterchange() {
 
 // ─── GOAL CELEBRATION ─────────────────────────────────────────────────────
 function showGoalCelebration(scorer, isYours) {
+  G._lastGoalSide = !!isYours;
   // Ball impact burst at the CORRECT goal end for the scoring team
   if (window._ball) {
     mvImpact('goal', 200, getGoalMouthY(isYours));
@@ -5970,7 +6252,7 @@ function showGoalCelebration(scorer, isYours) {
   document.getElementById('goal-banner-scorer').textContent = scorer ? scorer.name : '';
   const confetti = document.getElementById('goal-confetti');
   confetti.innerHTML = '';
-  if (isYours) {
+  if (isYours && !PREFS.reduceMotion) {
     const cols = ['#FAC775','#6abf40','#fff','#80c040','#4080e0'];
     for (let i = 0; i < 24; i++) {
       const el = document.createElement('div');
@@ -7992,7 +8274,10 @@ function endQtr() {
   G.momentum = G.momentum * 0.5;
   G.consecutiveScores = 0;
   const mm=~~(G.qtrSecs/60),ss=G.qtrSecs%60;
-  playSound('whistle');
+  (function() {
+    var _a = G.sA.g * 6 + G.sA.b, _b = G.sB.g * 6 + G.sB.b;
+    playSound('siren', G.qtr >= 4 ? (_a > _b ? 'win' : _a < _b ? 'loss' : 'final') : undefined);
+  })();
   addCmt('--- End of Q'+G.qtr+' ('+mm+':'+(ss<10?'0'+ss:ss)+') ---','');
   G.qtrScores.push({a:{g:G.sA.g,b:G.sA.b},b:{g:G.sB.g,b:G.sB.b}});
   updateQtrScoresBar();
@@ -9516,7 +9801,8 @@ function _groundPt(f, t) {
 }
 function drawDisposalTraces(bl, now) {
   var TR = G._trace; if (!TR || !TR.length) return;
-  var shown = TR.slice(-4), n = shown.length;
+  var trMode = PREFS.traces || 'full'; if (trMode === 'off') return;
+  var shown = TR.slice(trMode === 'latest' ? -1 : -4), n = shown.length;
   for (var k = 0; k < n; k++) {
     var tr = shown[k], rank = n - 1 - k;                 // 0 = newest
     var flying = now < tr.t0 + tr.dur;
@@ -10146,6 +10432,7 @@ function finalizeSeasonIfDone() {
   var goalMet = boardGoalMet(myPos), goal = G.season.goal;
   if (goal) { goal.met = goalMet; if (goalMet) G.coins += goal.reward; G._goalBonusPending = goalMet ? goal.reward : -1; }
   var oldDivision = G.division;
+  G.season.division = oldDivision;
   var promoResult = applyPromoRelegation(myPos);
   var histResult = G.season.champion ? 'champion' : G.season.finalist ? 'finalist' : (promoResult === 'promoted' || promoResult === 'relegated' ? promoResult : 'miss');
   recordSeasonHistory(G.season.num, G.season.myRecord, histResult, oldDivision);
@@ -13301,10 +13588,34 @@ function agePlayers(seasonNum) {
   return results;
 }
 
+// Free agents are veterans (26–30) out of contract in your league, so they're better the higher you play.
+// [rarity pool, then the overall each rarity comes in at]
+var FA_BY_DIV = {
+  4: { pool: ['local','local','fringe','fringe','fringe','reliable','reliable','reliable'],
+       ovr: { local: [52, 60], fringe: [63, 70], reliable: [71, 78] } },
+  3: { pool: ['fringe','fringe','fringe','reliable','reliable','reliable','reliable','gun'],
+       ovr: { fringe: [64, 70], reliable: [71, 77], gun: [78, 82] } },
+  2: { pool: ['fringe','reliable','reliable','reliable','reliable','gun','gun','gun'],
+       ovr: { fringe: [67, 72], reliable: [73, 79], gun: [80, 85] } },
+  1: { pool: ['reliable','reliable','reliable','gun','gun','gun','gun','superstar'],
+       ovr: { reliable: [76, 81], gun: [82, 87], superstar: [88, 91] } },
+  0: { pool: ['reliable','gun','gun','gun','gun','gun','superstar','superstar'],
+       ovr: { reliable: [82, 86], gun: [87, 92], superstar: [92, 95] } },
+};
+// Nudge a player's core stats until his overall lands on the target
+function scaleToOvr(p, target) {
+  var keys = ['kick','hand','mark','tackle','speed','strength','stamina'];
+  for (var it = 0; it < 8; it++) {
+    var cur = calcOVR(p.stats, p.pos, p.pos, p.secondaryPos);
+    if (cur === target) break;
+    var step = target > cur ? 1 : -1;
+    keys.forEach(function(k) { p.stats[k] = Math.max(30, Math.min(99, Math.round(p.stats[k] * target / cur) + (Math.abs(target - cur) <= 2 ? step : 0))); });
+  }
+}
 function generateFreeAgents() {
-  // Veteran free agents: age 26-30, OVR×5 signing cost, max reliable tier
-  const rarPool = ['local','local','fringe','fringe','fringe','reliable','reliable','reliable'];
-  G.freeAgents = [];
+  var cfg = FA_BY_DIV[offseasonDiv()] || FA_BY_DIV[4];
+  const rarPool = cfg.pool;
+  G.freeAgents = []; G.freeAgentsDiv = offseasonDiv();
   var positions = ['Full Forward','Full Forward','Half Forward','Half Forward','Centre','Centre','Wingman','Wingman','Ruck','Half Back','Half Back','Full Back','Full Back','Full Forward','Half Back'];
   for (var i = 0; i < 15; i++) {
     var rar = rarPool[~~(Math.random() * rarPool.length)];
@@ -13320,7 +13631,10 @@ function generateFreeAgents() {
       var shuffled = STAT_KEYS.slice().sort(function(){ return Math.random()-0.5; });
       shuffled.slice(0,2).forEach(function(k){ p.stats[k] = Math.min(99, p.stats[k] + 1 + ~~(Math.random()*3)); });
     }
+    var band = cfg.ovr[rar] || [60, 70];
+    scaleToOvr(p, band[0] + ~~(Math.random() * (band[1] - band[0] + 1)));
     p.peakOvr = calcOVR(p.stats, p.pos, p.pos, p.secondaryPos);
+    p.peakCeil = Math.max(p.peakCeil || 60, p.peakOvr);
     G.freeAgents.push(p);
   }
 }
@@ -13464,7 +13778,7 @@ function showAgingSummary(seasonNum, agingResults) {
   const acts = document.getElementById('aging-actions');
   acts.innerHTML = '';
   const btn2 = document.createElement('button'); btn2.className = 'btn primary lg'; btn2.style.flex = '1';
-  btn2.textContent = '🎓 Continue to the Draft →'; btn2.onclick = function(){ advanceOffseasonPhase(); };
+  btn2.textContent = '🎓 Continue to the ' + draftName() + ' →'; btn2.onclick = function(){ advanceOffseasonPhase(); };
   acts.appendChild(btn2);
 }
 
@@ -13585,7 +13899,7 @@ function renderFreeAgents(el) {
 
   const info = document.createElement('div');
   info.style.cssText = 'font-size:11px;color:var(--text3);margin-bottom:10px;padding:8px;background:var(--bg3);border-radius:7px';
-  info.textContent = 'Sign free agents. Price is based on their age and OVR. Market refreshes each season.';
+  info.textContent = 'Veterans out of contract in the ' + divName(G.freeAgentsDiv !== undefined ? G.freeAgentsDiv : offseasonDiv()) + '. Price is based on their age and OVR. Market refreshes each season.';
   el.appendChild(info);
 
   G.freeAgents.forEach(function(p, i) {
@@ -13760,14 +14074,39 @@ function renderBoardGoalCard() {
 // ══════════════════════════════════════════════════════════════════════════
 // NATIONAL DRAFT — two rounds in reverse ladder order
 // ══════════════════════════════════════════════════════════════════════════
-function genProspect() {
-  var r = Math.random();
-  var rar = r < 0.012 ? 'superstar' : r < 0.08 ? 'gun' : r < 0.32 ? 'reliable' : r < 0.67 ? 'fringe' : 'local';
+// Each league runs its own draft, and the kids get better the higher you play.
+// The league is the one the season was played in, so finishing last there earns its first pick.
+var DRAFT_NAMES = { 0: 'Worlds Draft', 1: 'National Draft', 2: 'State Draft', 3: 'Country Draft', 4: 'Outback Draft' };
+// cumulative odds: superstar, gun, reliable, fringe (the rest are local)
+var DRAFT_ODDS = {
+  4: [0.012, 0.08, 0.32, 0.67],
+  3: [0.025, 0.15, 0.50, 0.86],
+  2: [0.045, 0.25, 0.70, 0.97],
+  1: [0.09,  0.40, 0.88, 1],
+  0: [0.20,  0.70, 1,    1],
+};
+// The best kid in each draft is guaranteed at least this potential (star rating → ceiling):
+// Country 3★ (86) · State 3.5★ (89) · National 4★ (92) · Worlds 4.5★+ (95–97, and a second one at 95)
+var DRAFT_BLUECHIP = { 3: [3], 2: [3.5], 1: [4], 0: [4.5, 4.5] };
+function offseasonDiv() {
+  var sd = G.season && G.season.division;
+  if (sd === 0 || sd) return sd;
+  return G.division === 0 ? 0 : (G.division || 4);
+}
+function draftName(div) { return DRAFT_NAMES[div === undefined ? offseasonDiv() : div] || 'Draft'; }
+function genProspect(div, minStars) {
+  if (div === undefined) div = offseasonDiv();
+  var o = DRAFT_ODDS[div] || DRAFT_ODDS[4], r = Math.random();
+  var rar = r < o[0] ? 'superstar' : r < o[1] ? 'gun' : r < o[2] ? 'reliable' : r < o[3] ? 'fringe' : 'local';
+  if (minStars) rar = minStars >= 4 ? 'superstar' : minStars >= 3 ? 'gun' : 'reliable';
   var pos = randomFrom(['Full Forward','Half Forward','Centre','Centre','Wingman','Ruck','Half Back','Full Back','Half Forward','Half Back','Wingman','Full Back']);
   var p = gPlayer(pos, rar);
   p.age = 17 + ~~(Math.random() * 3);
   // Juniors carry a little extra upside
   if (Math.random() < 0.35 && p.stars < 5) p.stars = Math.min(5, p.stars + 0.5);
+  if (minStars && p.stars < minStars) p.stars = minStars;
+  if (minStars >= 4.5 && Math.random() < 0.3) p.stars = 5;
+  p.peakCeil = STAR_CEIL[p.stars] || p.peakCeil;      // ceiling always matches the stars shown
   return p;
 }
 function prospectScore(p) { return calcOVR(p.stats, p.pos, p.pos, p.secondaryPos) + (p.stars || 0) * 5 + Math.random() * 6; }
@@ -13776,10 +14115,11 @@ function initDraft() {
   var order = getLadder().slice().reverse();
   var n = order.length, picks = [];
   for (var rd = 1; rd <= 2; rd++) order.forEach(function(e, i){ picks.push({ no: picks.length + 1, round: rd, team: e.isYou ? G.teamName : e.name, isYou: !!e.isYou, player: null }); });
-  var pool = [];
-  for (var i = 0; i < n * 2 + 10; i++) pool.push(genProspect());
+  var div = offseasonDiv(), pool = [];
+  (DRAFT_BLUECHIP[div] || []).forEach(function(st) { pool.push(genProspect(div, st)); });
+  while (pool.length < n * 2 + 10) pool.push(genProspect(div));
   pool.sort(function(a, b){ return prospectScore(b) - prospectScore(a); });
-  G.draft = { season: curSeasonNum(), picks: picks, pool: pool, cur: 0, done: false, filter: 'all' };
+  G.draft = { season: curSeasonNum(), div: div, name: draftName(div), picks: picks, pool: pool, cur: 0, done: false, filter: 'all' };
   draftRunCpu();
   save();
 }
@@ -13817,7 +14157,9 @@ function draftAutoPick() {
 function draftSetFilter(f) { if (G.draft) { G.draft.filter = f; renderDraft(); } }
 function showDraft() {
   if (!G.draft || G.draft.season !== curSeasonNum()) initDraft();
-  showScreen('screen-draft'); renderDraft(); updCoins();
+  showScreen('screen-draft');
+  var t = document.getElementById('draft-title'); if (t) t.textContent = (G.draft && G.draft.name) || 'Draft';
+  renderDraft(); updCoins();
 }
 function renderDraft() {
   var d = G.draft, el = document.getElementById('draft-content'); if (!d || !el) return;
@@ -13828,7 +14170,7 @@ function renderDraft() {
     head = '<div class="draft-clock done"><div class="dc-lbl">Draft complete</div><div class="dc-main">You drafted ' + (got || 'nobody') + '</div>'
       + '<button class="btn primary lg" style="width:100%;margin-top:10px" onclick="advanceOffseasonPhase()">Open the Trade Period →</button></div>';
   } else {
-    head = '<div class="draft-clock"><div class="dc-lbl">Round ' + pk.round + ' · Pick ' + pk.no + '</div><div class="dc-main">You\'re on the clock</div>'
+    head = '<div class="draft-clock"><div class="dc-lbl">' + (d.name || 'Draft') + ' · Round ' + pk.round + ' · Pick ' + pk.no + '</div><div class="dc-main">You\'re on the clock</div>'
       + '<div class="dc-sub">Your picks: ' + mine.map(function(x){ return '#' + x.no; }).join(', ') + ' · picks go in reverse ladder order</div>'
       + '<button class="btn sm" style="margin-top:8px" onclick="draftAutoPick()">Auto-pick best available</button></div>';
   }
@@ -13840,7 +14182,7 @@ function renderDraft() {
     return '<div class="trade-player-row"><div class="trade-ovr" style="color:' + rarColor(p.rar) + '">' + ovr + '</div>'
       + '<div class="trade-info"><div class="trade-name">' + p.name + '</div>'
       + '<div class="trade-meta">' + playerPosLabel(p) + ' · Age ' + p.age + ' · <span style="color:' + starsColor(p.stars || 0) + '">' + starsStr(p.stars || 0) + '</span></div>'
-      + '<div style="font-size:10px;color:var(--text3);margin-top:2px">Kick ' + p.stats.kick + ' · Mark ' + p.stats.mark + ' · Speed ' + p.stats.speed + ' · Ceiling ~' + (p.peakCeil || '?') + '</div></div>'
+      + '<div style="font-size:10px;color:var(--text3);margin-top:2px">Kick ' + p.stats.kick + ' · Mark ' + p.stats.mark + ' · Speed ' + p.stats.speed + ' · Potential <b style="color:' + ((p.peakCeil || 0) >= 92 ? 'var(--gold)' : 'var(--text2)') + '">' + (p.peakCeil || '?') + '</b></div></div>'
       + '<button class="trade-btn buy" onclick="draftSelect(\'' + p.id + '\')">Draft</button></div>';
   }).join('');
   var board = d.picks.filter(function(x){ return x.player; }).slice(-12).reverse().map(function(x){
@@ -14480,6 +14822,10 @@ var PREFS = {
   soundOn: true,
   showFatigue: true,
   showDisposals: true,
+  packReveal: 'deal',   // 'deal' (tear the foil, deal one by one) or 'classic' (all six face-down, flipped worst to best)
+  traces: 'full',       // 'full' (last 4 disposals), 'latest', 'off'
+  autoPause: false,     // lineup timer starts paused before each quarter
+  reduceMotion: null,   // null = follow the device's setting
 };
 
 function loadPrefs() {
@@ -14487,6 +14833,10 @@ function loadPrefs() {
     var p = JSON.parse(localStorage.getItem('pfm_prefs') || 'null');
     if (p) PREFS = Object.assign(PREFS, p);
   } catch(e) {}
+  if (PREFS.reduceMotion === null || PREFS.reduceMotion === undefined) {
+    try { PREFS.reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { PREFS.reduceMotion = false; }
+  }
+  applyMotionPref();
 }
 
 function savePrefs() {
@@ -14703,6 +15053,112 @@ function toggleDisposalsSetting() {
   renderField && renderField();
 }
 
+
+function setPackReveal(v) { PREFS.packReveal = v === 'classic' ? 'classic' : 'deal'; savePrefs(); updateSettingsUI(); }
+function setTraces(v) { PREFS.traces = (v === 'latest' || v === 'off') ? v : 'full'; savePrefs(); updateSettingsUI(); }
+function toggleAutoPause() { PREFS.autoPause = !PREFS.autoPause; savePrefs(); }
+function toggleReduceMotion() { PREFS.reduceMotion = !PREFS.reduceMotion; savePrefs(); applyMotionPref(); }
+// Reduce motion: animations and transitions finish instantly, no confetti, flashes or shakes,
+// and the rain/wind on the ground stands still.
+function applyMotionPref() {
+  try {
+    if (document.body && document.body.classList) document.body.classList.toggle('reduce-motion', !!PREFS.reduceMotion);
+    var sv = document.getElementById('oval-game-svg');
+    if (sv && sv.pauseAnimations) { if (PREFS.reduceMotion) sv.pauseAnimations(); else sv.unpauseAnimations(); }
+  } catch (e) {}
+}
+
+// ── BACK UP / RESTORE ──────────────────────────────────────────────────────
+// A backup is your save plus your settings, in one small file. It carries a signature, so a
+// file that's been edited by hand is refused (the same reason saves can't be pumped with coins).
+function _bkSig(str) {
+  var h1 = 0xdeadbeef ^ 92, h2 = 0x41c6ce57 ^ 92;
+  str = 'pfm-backup|' + str;
+  for (var i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+function _bkMsg(txt, ok) {
+  var m = document.getElementById('backup-msg'); if (!m) return;
+  m.textContent = txt || ''; m.style.display = txt ? '' : 'none';
+  m.style.color = ok ? '#6abf40' : '#ff9b8a';
+}
+function makeBackup() {
+  try { save(); } catch (e) {}
+  var data = localStorage.getItem(SAVE_KEY);
+  if (!data) return null;
+  var saved = new Date().toISOString();
+  return { app: 'pocket-footy-manager', v: 1, saved: saved, club: G.teamName || '', season: (G.season && G.season.num) || 1,
+           data: data, prefs: JSON.stringify(PREFS), sig: _bkSig(data + '|' + saved) };
+}
+function backupSave() {
+  var b = makeBackup();
+  if (!b) { _bkMsg('Nothing to back up yet — pick your squad first.'); return; }
+  var slug = (b.club || 'club').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'club';
+  var name = 'pocket-footy-' + slug + '-s' + b.season + '-' + b.saved.slice(0, 10) + '.json';
+  try {
+    var blob = new Blob([JSON.stringify(b)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function() { try { URL.revokeObjectURL(url); a.remove(); } catch (e) {} }, 1500);
+    _bkMsg('Saved ' + name + ' to your downloads.', true);
+  } catch (e) { _bkMsg('Your browser blocked the download.'); }
+}
+// Check a backup's text; returns {ok, err, b, d}
+function readBackup(text) {
+  var b, d;
+  try { b = JSON.parse(text); } catch (e) { return { err: 'That file isn\'t a Pocket Footy backup.' }; }
+  if (!b || b.app !== 'pocket-footy-manager' || typeof b.data !== 'string') return { err: 'That file isn\'t a Pocket Footy backup.' };
+  if (b.sig !== _bkSig(b.data + '|' + b.saved)) return { err: 'This backup has been changed since it was made, so it can\'t be loaded.' };
+  try { d = JSON.parse(b.data); } catch (e) { return { err: 'This backup is damaged.' }; }
+  if (!d || !Array.isArray(d.players) || !d.players.length) return { err: 'This backup has no club in it.' };
+  return { ok: true, b: b, d: d };
+}
+var _pendingRestore = null;
+function restorePick() {
+  _bkMsg(''); var inp = document.getElementById('restore-file');
+  if (inp) { inp.value = ''; inp.click(); }
+}
+function restoreFile(ev) {
+  var f = ev && ev.target && ev.target.files && ev.target.files[0]; if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function() { restoreText(String(rd.result || '')); };
+  rd.onerror = function() { _bkMsg('Couldn\'t read that file.'); };
+  rd.readAsText(f);
+}
+function restoreText(text) {
+  var r = readBackup(text);
+  if (!r.ok) { _pendingRestore = null; _bkMsg(r.err); return false; }
+  _pendingRestore = r;
+  var box = document.getElementById('restore-confirm');
+  var when = ''; try { when = new Date(r.b.saved).toLocaleDateString(); } catch (e) {}
+  var divN = r.d.division === 0 ? 'Worlds' : 'Division ' + (r.d.division || 4);
+  var seasonN = (r.d.season && r.d.season.num) || r.b.season || 1;
+  if (box) {
+    document.getElementById('restore-what').innerHTML = '<b style="color:var(--text)">' + escHTML(r.d.teamName || r.b.club || 'Your club') + '</b><br>'
+      + 'Season ' + seasonN + ' · ' + divN + ' · ' + r.d.players.length + ' players · ' + (r.d.coins || 0).toLocaleString() + ' coins'
+      + (when ? '<br>Backed up ' + when : '');
+    box.style.display = '';
+  }
+  return true;
+}
+function restoreCancel() { _pendingRestore = null; var box = document.getElementById('restore-confirm'); if (box) box.style.display = 'none'; }
+function restoreConfirm() {
+  var r = _pendingRestore; if (!r) return;
+  G._restoring = true;                      // no autosave may overwrite it before the reload
+  try {
+    stopSimLoop(); if (G.preInt) clearInterval(G.preInt);
+    localStorage.setItem(SAVE_KEY, r.b.data);
+    if (r.b.prefs) localStorage.setItem('pfm_prefs', r.b.prefs);
+  } catch (e) { G._restoring = false; _bkMsg('Couldn\'t write the save on this device.'); return; }
+  _pendingRestore = null;
+  if (typeof location !== 'undefined' && location.reload) location.reload();
+}
+function escHTML(s) { return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
 function updateSettingsUI() {
   // Theme
   var themeBtn = document.getElementById('setting-theme-btn');
@@ -14725,6 +15181,11 @@ function updateSettingsUI() {
   // Disposals
   var dis = document.getElementById('setting-disposals-btn');
   if (dis) { dis.textContent = PREFS.showDisposals ? 'On' : 'Off'; dis.className = 'setting-toggle' + (PREFS.showDisposals ? ' on' : ''); }
+  ['deal', 'classic'].forEach(function(v) { var b = document.getElementById('prset-' + v); if (b) b.className = 'setting-speed-btn' + ((PREFS.packReveal || 'deal') === v ? ' active' : ''); });
+  ['full', 'latest', 'off'].forEach(function(v) { var b = document.getElementById('trset-' + v); if (b) b.className = 'setting-speed-btn' + ((PREFS.traces || 'full') === v ? ' active' : ''); });
+  [['setting-autopause-btn', PREFS.autoPause], ['setting-motion-btn', PREFS.reduceMotion]].forEach(function(x) {
+    var b = document.getElementById(x[0]); if (b) { b.textContent = x[1] ? 'On' : 'Off'; b.className = 'setting-toggle' + (x[1] ? ' on' : ''); }
+  });
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────
