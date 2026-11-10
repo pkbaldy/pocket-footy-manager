@@ -19,14 +19,14 @@ os.makedirs(OUT, exist_ok=True)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
-scene.render.engine = 'CYCLES'; scene.cycles.device = 'CPU'; scene.cycles.samples = 32
+scene.render.engine = 'CYCLES'; scene.cycles.device = 'CPU'; scene.cycles.samples = 64
 scene.render.film_transparent = True
 scene.render.resolution_x = scene.render.resolution_y = CELL
 scene.render.image_settings.file_format = 'PNG'; scene.render.image_settings.color_mode = 'RGBA'
 scene.view_settings.view_transform = 'Standard'
 
 # ── leather texture: panels, seams and laces painted onto the sphere's UVs ──────
-W, H = 512, 256
+W, H = 1024, 512
 img = np.zeros((H, W, 4), dtype=np.float32)
 u = np.linspace(0, 1, W, endpoint=False)[None, :].repeat(H, 0)
 v = np.linspace(0, 1, H)[:, None].repeat(W, 1)
@@ -42,19 +42,32 @@ lace_zone = (np.abs(u - 0.25) < 0.035) & (np.abs(v - 0.5) < 0.17)
 ladder = (np.floor(v * 70) % 2 == 0)
 col[lace_zone & ladder] = white
 col[(np.abs(u - 0.25) < 0.004) & (np.abs(v - 0.5) < 0.18)] = white
+stamp = ((u - 0.63) / 0.05) ** 2 + ((v - 0.5) / 0.09) ** 2
+col[(stamp < 1) & (stamp > 0.55)] = np.array([0.95, 0.78, 0.3])        # gold oval maker's stamp
+col[(np.abs(u - 0.63) < 0.012) & (np.abs(v - 0.5) < 0.05)] = np.array([0.95, 0.78, 0.3])
 img[..., :3] = col; img[..., 3] = 1
+# height map for the bump: raised seams and lacing, pebbled grain everywhere else
+hgt = 0.5 + 0.12 * np.random.RandomState(9).rand(H, W)
+hgt[du < 0.008] = 1.0
+hgt[lace_zone & ladder] = 1.0
+himg = np.ones((H, W, 4), dtype=np.float32); himg[..., 0] = himg[..., 1] = himg[..., 2] = hgt
+htex = bpy.data.images.new('LeatherH', W, H); htex.pixels = himg.ravel()
 tex = bpy.data.images.new('Leather', W, H); tex.pixels = img.ravel()
 
 m = bpy.data.materials.new('Sherrin'); m.use_nodes = True
 nt = m.node_tree; bsdf = nt.nodes['Principled BSDF']
 ti = nt.nodes.new('ShaderNodeTexImage'); ti.image = tex
 nt.links.new(ti.outputs['Color'], bsdf.inputs['Base Color'])
-bsdf.inputs['Roughness'].default_value = 0.38
+bsdf.inputs['Roughness'].default_value = 0.42
+hn = nt.nodes.new('ShaderNodeTexImage'); hn.image = htex
+bump = nt.nodes.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = 0.6; bump.inputs['Distance'].default_value = 0.02
+nt.links.new(hn.outputs['Color'], bump.inputs['Height']); nt.links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+bsdf.inputs['Coat Weight'].default_value = 0.25
 
 # ── the ball: prolate spheroid, long axis along X ───────────────────────────
 bm = bmesh.new()
 bm.loops.layers.uv.new('UVMap')
-bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=1, calc_uvs=True)
+bmesh.ops.create_uvsphere(bm, u_segments=64, v_segments=32, radius=1, calc_uvs=True)
 # pointier ends than a plain ellipsoid
 for vtx in bm.verts:
     z = vtx.co.z
